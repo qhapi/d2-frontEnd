@@ -33,13 +33,13 @@ const frameIn = [
       },
       // 新建
       {
-        path: 'create',
-        name: 'create',
+        path: 'locateOne',
+        name: 'locateOne',
         meta: {
           title: '漏洞定位修复',
           auth: true
         },
-        component: _import('system/create')
+        component: _import('system/locateOne')
       },
       // 加入
       {
