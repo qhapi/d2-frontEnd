@@ -1,12 +1,29 @@
 <template>
   <d2-container>
-    <h1>{{ channelname }}-{{ uid }}</h1>
-    <el-descriptions>
-      <el-descriptions-item label="用户id">{{uid}}</el-descriptions-item>
-      <el-descriptions-item label="最后轮次">{{lastround}}</el-descriptions-item>
-      <el-descriptions-item label="贡献值">{{contribution}}</el-descriptions-item>
-    </el-descriptions>
-    <div class="echart" id="umychart" :style="myChartStyle"></div>
+    <el-row>
+      <el-col span="8">
+        <el-result icon="success" title="成功修复：80" subTitle="80%">
+        </el-result>
+      </el-col>
+      <el-col span="8">
+        <el-result icon="warning" title="修复异常：10" subTitle="10%">
+        </el-result>
+      </el-col>
+      <el-col span="8">
+        <el-result icon="error" title="修复错误：10" subTitle="10%">
+        </el-result>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-table id="table" :data="datadetail" @row-click="rowClicked">
+        <el-table-column prop="name" label="合约名称" sortable :width="calculatedWidth75"></el-table-column>
+        <el-table-column prop="type" label="漏洞类型" sortable :width="calculatedWidth25"></el-table-column>
+      </el-table>
+    </el-row>
+    <el-row>
+      <el-col :span="20"><div class="grid-content"></div></el-col>
+      <el-col :span="4"><el-button @click="buttonClicked">全部导出</el-button></el-col>
+    </el-row>
   </d2-container>
 </template>
 
@@ -14,7 +31,7 @@
 import axios from 'axios'
 import * as echarts from 'echarts'
 export default {
-  name: 'udetail',
+  name: 'locateMul',
   data () {
     return {
       myChart: {},

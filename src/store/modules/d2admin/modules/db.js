@@ -12,7 +12,7 @@ export default {
      * @param {Object} payload dbName {String} 数据库名称
      * @param {Object} payload path {String} 存储路径
      * @param {Object} payload value {*} 需要存储的值
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     set (context, {
       dbName = 'database',
@@ -29,7 +29,7 @@ export default {
      * @param {Object} payload dbName {String} 数据库名称
      * @param {Object} payload path {String} 存储路径
      * @param {Object} payload defaultValue {*} 取值失败的默认值
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     get (context, {
       dbName = 'database',
@@ -42,7 +42,7 @@ export default {
     /**
      * @description 获取存储数据库对象
      * @param {Object} context
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     database (context, {
       user = false
@@ -55,7 +55,7 @@ export default {
     /**
      * @description 清空存储数据库对象
      * @param {Object} context
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     databaseClear (context, {
       user = false
@@ -70,7 +70,7 @@ export default {
      * @description 获取存储数据库对象 [ 区分页面 ]
      * @param {Object} context
      * @param {Object} payload basis {String} 页面区分依据 [ name | path | fullPath ]
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     databasePage (context, {
       basis = 'fullPath',
@@ -86,7 +86,7 @@ export default {
      * @description 清空存储数据库对象 [ 区分页面 ]
      * @param {Object} context
      * @param {Object} payload basis {String} 页面区分依据 [ name | path | fullPath ]
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     databasePageClear (context, {
       basis = 'fullPath',
@@ -104,7 +104,7 @@ export default {
      * @param {Object} context
      * @param {Object} payload instance {Object} vue 实例
      * @param {Object} payload basis {String} 页面区分依据 [ name | path | fullPath ]
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     pageSet (context, {
       instance,
@@ -123,7 +123,7 @@ export default {
      * @param {Object} context
      * @param {Object} payload instance {Object} vue 实例
      * @param {Object} payload basis {String} 页面区分依据 [ name | path | fullPath ]
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     pageGet (context, {
       instance,
@@ -140,7 +140,7 @@ export default {
      * @description 清空页面快照
      * @param {Object} context
      * @param {Object} payload basis {String} 页面区分依据 [ name | path | fullPath ]
-     * @param {Object} payload user {Boolean} 是否区分用户
+     * @param {Object} payload locateMul {Boolean} 是否区分用户
      */
     pageClear (context, {
       basis = 'fullPath',

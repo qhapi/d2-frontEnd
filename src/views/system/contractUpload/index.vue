@@ -1,8 +1,8 @@
 <template>
   <d2-container>
-    <el-form ref="form" :model="form" label-width="80px">
+    <el-row>
       <h1>上传合约文件</h1>
-      <el-form-item>
+      <el-col>
         <el-upload
           class="upload-demo"
           drag
@@ -12,9 +12,12 @@
           <i class="el-icon-upload"></i>
           <div class="el-upload__text">将合约文件拖到此处，或<em>点击上传</em></div>
         </el-upload>
-        <el-button type="primary" size="small" @click="detail">检测合约</el-button>
-      </el-form-item>
-    </el-form>
+      </el-col>
+    </el-row>
+      <el-row>
+        <el-col :span="8"><div class="grid-content"></div></el-col>
+        <el-col :span="4"><el-button type="primary" @click="detail">检测合约</el-button></el-col>
+      </el-row>
   </d2-container>
 </template>
 

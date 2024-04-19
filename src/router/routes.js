@@ -71,13 +71,14 @@ const frameIn = [
         component: _import('system/detectResult')
       },
       {
-        path: '/udetail/:channelname/:uid',
-        name: 'udetail',
+        // path: '/udetail/:channelname/:uid',
+        path: 'locateMul',
+        name: 'locateMul',
         meta: {
-          title: '详情',
+          title: '修复结果',
           auth: true
         },
-        component: _import('system/user')
+        component: _import('system/locateMul')
       },
       // // 演示页面
       // {

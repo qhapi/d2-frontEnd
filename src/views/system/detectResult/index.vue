@@ -1,13 +1,13 @@
 <template>
   <d2-container>
     <div class="echart" id="mychart" :style="myChartStyle"></div>
-    <el-table id="table" :data="datadetail" @row-click="vulnSet">
+    <el-table id="table" :data="datadetail" @row-click="rowClicked">
       <el-table-column prop="name" label="合约名称" sortable :width="calculatedWidth75"></el-table-column>
       <el-table-column prop="type" label="漏洞类型" sortable :width="calculatedWidth25"></el-table-column>
     </el-table>
     <el-row>
       <el-col :span="20"><div class="grid-content"></div></el-col>
-      <el-col :span="4"><el-button>全部修复</el-button></el-col>
+      <el-col :span="4"><el-button @click="buttonClicked">全部修复</el-button></el-col>
     </el-row>
   </d2-container>
 </template>
@@ -45,12 +45,6 @@ export default {
     }
   },
   computed: {
-    calculatedWidth75 () {
-      return this.tableWidth * 0.75
-    },
-    calculatedWidth25 () {
-      return this.tableWidth * 0.25
-    }
   },
   created () {
     // eslint-disable-next-line no-unused-expressions
@@ -68,7 +62,16 @@ export default {
     this.initEcharts()
   },
   methods: {
-    vulnSet (row, column, event) {
+    calculatedWidth75 () {
+      return this.tableWidth * 0.75
+    },
+    calculatedWidth25 () {
+      return this.tableWidth * 0.25
+    },
+    buttonClicked () {
+      this.$router.push('/locateMul')
+    },
+    rowClicked (row, column, event) {
       console.log(row)
       this.$router.push('/locateOne')
     },
