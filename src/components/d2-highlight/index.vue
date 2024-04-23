@@ -1,5 +1,5 @@
 <template>
-  <pre class="d2-highlight hljs" v-html="highlightHTML"></pre>
+  <pre class="hljs" v-html="highlightHTML"></pre>
 </template>
 
 <script>
@@ -8,7 +8,8 @@
 // http://highlightjs.readthedocs.io/en/latest/api.html#configure-options
 import highlight from 'highlight.js'
 import htmlFormat from './libs/htmlFormat'
-import './libs/style.github.css'
+// import './libs/style.github.css'
+import 'highlight.js/scss/default.scss'
 export default {
   name: 'd2-highlight',
   props: {

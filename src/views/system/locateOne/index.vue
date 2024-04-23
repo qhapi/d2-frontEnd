@@ -3,11 +3,11 @@
     <el-form>
       <el-form-item>
         <h1>原始合约</h1>
-        <el-input v-model="inputText" placeholder="请输入内容" type="textarea" autosize disabled="true"></el-input>
+        <d2-highlight :code="inputText" ></d2-highlight>
       </el-form-item>
       <el-form-item>
         <h1>修改后合约</h1>
-        <el-input v-model="outputText" type="textarea" autosize disabled="true"></el-input>
+        <d2-highlight :code="outputText" ></d2-highlight>
       </el-form-item>
       <el-form-item>
         <template>

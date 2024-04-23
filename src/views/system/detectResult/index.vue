@@ -1,10 +1,20 @@
 <template>
   <d2-container>
     <div class="echart" id="mychart" :style="myChartStyle"></div>
-    <el-table id="table" :data="datadetail" @row-click="rowClicked">
-      <el-table-column prop="name" label="合约名称" sortable :width="calculatedWidth75"></el-table-column>
-      <el-table-column prop="type" label="漏洞类型" sortable :width="calculatedWidth25"></el-table-column>
+    <el-table ref="tableRef" :data="datadetail.slice((currentPage-1)*PageSize,currentPage*PageSize)" @row-click="rowClicked">
+      <el-table-column prop="name" label="合约名称" sortable ></el-table-column>
+      <el-table-column prop="type" label="漏洞类型" sortable ></el-table-column>
     </el-table>
+    <div class="tabListPage">
+      <el-pagination @size-change="handleSizeChange"
+                     @current-change="handleCurrentChange"
+                     :hide-on-single-page="true"
+                     :current-page="currentPage"
+                     :page-sizes="pageSizes"
+                     :page-size="PageSize" layout="total, sizes, prev, pager, next, jumper"
+                     :total="totalCount">
+      </el-pagination>
+    </div>
     <el-row>
       <el-col :span="20"><div class="grid-content"></div></el-col>
       <el-col :span="4"><el-button @click="buttonClicked">全部修复</el-button></el-col>
@@ -41,7 +51,11 @@ export default {
       myChart: {},
       myChartStyle: { width: '100%', height: '520px', background: 'white' },
       data: [],
-      datadetail: []
+      datadetail: [],
+      currentPage: 1,
+      totalCount: 100,
+      pageSizes: [10, 20, 50, 100],
+      PageSize: 10
     }
   },
   computed: {
@@ -55,18 +69,27 @@ export default {
       { value: 484, name: '漏洞3' },
       { value: 300, name: '漏洞4' }
       // eslint-disable-next-line no-sequences
-    ],
-    this.datadetail = [{ name: 'test1.sol', type: '1' }]
+    ]
+    this.generateData()
   },
   mounted () {
     this.initEcharts()
   },
   methods: {
-    calculatedWidth75 () {
-      return this.tableWidth * 0.75
+    generateData () {
+      const states = ['修复成功', '修复异常', '修复失败'] // 可能的状态
+      this.datadetail = Array.from({ length: 100 }, (v, i) => ({
+        name: `test${i + 1}.sol`,
+        type: String(Math.floor(Math.random() * 10) + 1),
+        state: states[Math.floor(Math.random() * states.length)]
+      }))
     },
-    calculatedWidth25 () {
-      return this.tableWidth * 0.25
+    handleSizeChange (val) {
+      this.PageSize = val
+      this.currentPage = 1
+    },
+    handleCurrentChange (val) {
+      this.currentPage = val
     },
     buttonClicked () {
       this.$router.push('/locateMul')//转到修复界面

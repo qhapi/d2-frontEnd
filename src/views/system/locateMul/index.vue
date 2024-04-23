@@ -2,7 +2,7 @@
   <d2-container>
     <el-row>
       <el-col span="8">
-        <el-result icon="success" title="成功修复：80" subTitle="80%">
+        <el-result icon="success" title="修复成功：80" subTitle="80%">
         </el-result>
       </el-col>
       <el-col span="8">
@@ -10,15 +10,28 @@
         </el-result>
       </el-col>
       <el-col span="8">
-        <el-result icon="error" title="修复错误：10" subTitle="10%">
+        <el-result icon="error" title="修复失败：10" subTitle="10%">
         </el-result>
       </el-col>
     </el-row>
+    <el-divider></el-divider>
+    <h1>完成列表</h1>
     <el-row>
-      <el-table id="table" :data="datadetail" @row-click="rowClicked">
-        <el-table-column prop="name" label="合约名称" sortable :width="calculatedWidth75"></el-table-column>
-        <el-table-column prop="type" label="漏洞类型" sortable :width="calculatedWidth25"></el-table-column>
+      <el-table id="table" :data="datadetail.slice((currentPage-1)*PageSize,currentPage*PageSize)" @row-click="rowClicked">
+        <el-table-column prop="name" label="合约名称" fit sortable ></el-table-column>
+        <el-table-column prop="type" label="漏洞类型" sortable ></el-table-column>
+        <el-table-column prop="state" label="修复状态" sortable ></el-table-column>
       </el-table>
+      <div class="tabListPage">
+        <el-pagination @size-change="handleSizeChange"
+                       @current-change="handleCurrentChange"
+                       :hide-on-single-page="true"
+                       :current-page="currentPage"
+                       :page-sizes="pageSizes"
+                       :page-size="PageSize" layout="total, sizes, prev, pager, next, jumper"
+                       :total="totalCount">
+        </el-pagination>
+      </div>
     </el-row>
     <el-row>
       <el-col :span="20"><div class="grid-content"></div></el-col>
@@ -28,67 +41,43 @@
 </template>
 
 <script>
-import axios from 'axios'
-import * as echarts from 'echarts'
+// import axios from 'axios'
+// import * as echarts from 'echarts'
 export default {
   name: 'locateMul',
   data () {
     return {
-      myChart: {},
-      myChartStyle: { width: '100%', height: '520px', background: 'white' },
-      channelname: this.$route.params.channelname,
-      uid: this.$route.params.uid,
-      contribution: 0,
-      contributions: [],
-      lastround: 0,
-      rounds: []
+      currentPage: 1,
+      totalCount: 100,
+      pageSizes: [10, 20, 50, 100],
+      PageSize: 10,
+      datadetail: []
     }
   },
   created () {
-    this.getChannelDetails(this.channelname, this.uid)
+    this.generateData()
   },
   mounted () {
     this.initEcharts()
   },
   methods: {
-    getChannelDetails (channelname, uid) {
-      axios.post('http://localhost:5500/getContri', { uid: '19' }
-      ).then(response => {
-        // console.log(response)
-        this.contributions = response.data.filter(obj => `client${obj.ClientID}` === `${uid}`).map(obj => obj.Contri)[0]
-        this.contribution = this.contributions.at(-1)
-        this.rounds = Array.from({ length: this.contributions.length }, (_, i) => i + 1)
-        this.lastround = this.rounds.at(-1)
-        this.initEcharts()
-      })
+    handleSizeChange (val) {
+      this.PageSize = val
+      this.currentPage = 1
     },
-    initEcharts () {
-      const xdata = this.rounds
-      const option = {
-        xAxis: {
-          data: xdata,
-          axisTick: {
-            show: false,
-            alignWithLabel: true
-          }
-        },
-        tooltip: {
-          trigger: 'item'
-        },
-        yAxis: {},
-        series: [
-          {
-            data: this.contributions,
-            type: 'line' // 类型设置为折线图
-          }
-        ]
-      }
-      this.myChart = echarts.init(document.getElementById('umychart'))
-      this.myChart.setOption(option)
-      // 随着屏幕大小调节图表
-      window.addEventListener('resize', () => {
-        this.myChart.resize()
-      })
+    handleCurrentChange (val) {
+      this.currentPage = val
+    },
+    generateData () {
+      const states = ['修复成功', '修复异常', '修复失败'] // 可能的状态
+      this.datadetail = Array.from({ length: 100 }, (v, i) => ({
+        name: `test${i + 1}.sol`,
+        type: String(Math.floor(Math.random() * 10) + 1),
+        state: states[Math.floor(Math.random() * states.length)]
+      }))
+    },
+    rowClicked () {
+      this.$router.push('/locateOne')
     }
   }
 }
