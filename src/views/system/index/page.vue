@@ -1,51 +1,77 @@
 <template>
   <d2-container class="page">
     <d2-page-cover>
-      <!-- <d2-icon-svg class="logo" name="d2-admin"/> -->
+      <div class="cover-content">
+        <!-- 区块链元素图片 -->
+        <img src="@/assets/image/blockchain-image.jpg" alt="区块链元素图片" class="blockchain-image">
+        <h1 class="cover-title">多功能区块链漏洞检测修复平台</h1>
+        <p class="cover-description">欢迎使用我们的平台，致力于解决区块链系统中的安全隐患。</p>
+        <!-- 点击按钮跳转到 contractUpload 页面 -->
+        <el-button type="primary" @click="startClicked" class="cover-button">开始使用</el-button>
+      </div>
       <template slot="footer">
         <div class="btn-group">
           <span class="btn-group__btn">面向多层次的区块链漏洞挖掘技术研究</span>
         </div>
-        <!-- <d2-badge/> -->
-        <!-- <d2-help/> -->
       </template>
     </d2-page-cover>
   </d2-container>
 </template>
 
 <script>
-// import D2Badge from './components/d2-badge'
-// import D2Help from './components/d2-help'
-import D2PageCover from './components/d2-page-cover'
 export default {
-  components: {
-    // D2Badge,
-    // D2Help,
-    D2PageCover
+  methods: {
+    startClicked() {
+      // 跳转到 contractUpload 页面
+      this.$router.push({ name: 'contractUpload' });
+    }
   }
 }
 </script>
 
 <style lang="scss" scoped>
 .page {
-  .logo {
-    width: 120px;
+  // 设置背景图片
+  background-image: url('../../../assets/image/background.jpg');
+  background-size: cover; // 背景图片尺寸适应容器大小
+  background-position: center; // 背景图片居中对齐
+  background-repeat: no-repeat; // 不重复平铺背景图片
+
+  .cover-content {
+    text-align: center;
+    padding: 40px;
+  }
+  .blockchain-image {
+    max-width: 50%; /* 设置图片最大宽度为父元素宽度的一半 */
+    height: auto; /* 根据宽度自动调整高度 */
+    margin-bottom: 20px;
+  }
+  .cover-title {
+    font-size: 36px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+  .cover-description {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 30px;
+  }
+  .cover-button {
+    font-size: 18px;
   }
   .btn-group {
-    color: $color-text-placehoder;
+    color: #666;
     font-size: 12px;
     line-height: 12px;
-    margin-top: 0px;
-    margin-bottom: 20px;
+    margin-top: 20px;
     .btn-group__btn {
-      color: $color-text-sub;
+      color: #666;
       &:hover {
-        color: $color-text-main;
-      }
-      &.btn-group__btn--link {
-        color: $color-primary;
+        color: #409EFF;
       }
     }
   }
 }
 </style>
+
+

@@ -52,7 +52,7 @@ export default {
   },
   methods: {
     getChannelDetails (channelname, uid) {
-      axios.post('http://localhost:5500/getContri', '19'
+      axios.post('http://localhost:5500/getContri', { uid: '19' }
       ).then(response => {
         // console.log(response)
         this.contributions = response.data.filter(obj => `client${obj.ClientID}` === `${uid}`).map(obj => obj.Contri)[0]

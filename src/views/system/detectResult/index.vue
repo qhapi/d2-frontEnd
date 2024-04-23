@@ -69,11 +69,11 @@ export default {
       return this.tableWidth * 0.25
     },
     buttonClicked () {
-      this.$router.push('/locateMul')
+      this.$router.push('/locateMul')//转到修复界面
     },
     rowClicked (row, column, event) {
       console.log(row)
-      this.$router.push('/locateOne')
+      this.$router.push('/locateOne')//转到对应合约的漏洞修复处
     },
     initEcharts () {
       // const xdata = Array.from({ length: this.round }, (_, i) => i + 1)
@@ -112,7 +112,20 @@ export default {
       window.addEventListener('resize', () => {
         this.myChart.resize()
       })
-    }
+    },
+    
+    // fetchChartData () {
+    //   axios.get('/api/chartData') // 发送请求获取图表数据
+    //     .then(response => {
+    //       // 更新 data 数据
+    //       this.data = response.data
+    //       // 初始化图表
+    //       this.initEcharts()
+    //     })
+    //     .catch(error => {
+    //       console.error('Error fetching chart data:', error)
+    //     })
+    // }
   }
 }
 </script>
