@@ -1,6 +1,5 @@
 <template>
   <d2-container class="page">
-    <d2-page-cover>
       <div class="cover-content">
         <!-- 区块链元素图片 -->
         <img src="@/assets/image/blockchain-image.jpg" alt="区块链元素图片" class="blockchain-image">
@@ -14,16 +13,15 @@
           <span class="btn-group__btn">面向多层次的区块链漏洞挖掘技术研究</span>
         </div>
       </template>
-    </d2-page-cover>
   </d2-container>
 </template>
 
 <script>
 export default {
   methods: {
-    startClicked() {
+    startClicked () {
       // 跳转到 contractUpload 页面
-      this.$router.push({ name: 'contractUpload' });
+      this.$router.push({ name: 'contractUpload' })
     }
   }
 }
@@ -73,5 +71,3 @@ export default {
   }
 }
 </style>
-
-

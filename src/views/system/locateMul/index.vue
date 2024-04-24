@@ -22,6 +22,8 @@
         <el-table-column prop="type" label="漏洞类型" sortable ></el-table-column>
         <el-table-column prop="state" label="修复状态" sortable ></el-table-column>
       </el-table>
+    </el-row>
+    <el-row>
       <div class="tabListPage">
         <el-pagination @size-change="handleSizeChange"
                        @current-change="handleCurrentChange"

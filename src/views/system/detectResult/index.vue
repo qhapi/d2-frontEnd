@@ -5,16 +5,18 @@
       <el-table-column prop="name" label="合约名称" sortable ></el-table-column>
       <el-table-column prop="type" label="漏洞类型" sortable ></el-table-column>
     </el-table>
-    <div class="tabListPage">
-      <el-pagination @size-change="handleSizeChange"
+    <el-row>
+      <div class="tabListPage">
+        <el-pagination @size-change="handleSizeChange"
                      @current-change="handleCurrentChange"
                      :hide-on-single-page="true"
                      :current-page="currentPage"
                      :page-sizes="pageSizes"
                      :page-size="PageSize" layout="total, sizes, prev, pager, next, jumper"
                      :total="totalCount">
-      </el-pagination>
-    </div>
+        </el-pagination>
+      </div>
+    </el-row>
     <el-row>
       <el-col :span="20"><div class="grid-content"></div></el-col>
       <el-col :span="4"><el-button @click="buttonClicked">全部修复</el-button></el-col>
@@ -92,11 +94,11 @@ export default {
       this.currentPage = val
     },
     buttonClicked () {
-      this.$router.push('/locateMul')//转到修复界面
+      this.$router.push('/locateMul') // 转到修复界面
     },
     rowClicked (row, column, event) {
       console.log(row)
-      this.$router.push('/locateOne')//转到对应合约的漏洞修复处
+      this.$router.push('/locateOne') // 转到对应合约的漏洞修复处
     },
     initEcharts () {
       // const xdata = Array.from({ length: this.round }, (_, i) => i + 1)
@@ -135,8 +137,8 @@ export default {
       window.addEventListener('resize', () => {
         this.myChart.resize()
       })
-    },
-    
+    }
+
     // fetchChartData () {
     //   axios.get('/api/chartData') // 发送请求获取图表数据
     //     .then(response => {
