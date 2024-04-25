@@ -1,11 +1,10 @@
 <template>
   <d2-container>
-    <el-row>
+    <el-row gutter="20">
       <el-col :span="11">
         <h1>原始合约</h1>
         <d2-highlight :code="inputText" ></d2-highlight>
       </el-col>
-      <el-col :span="1"><div class="grid-content"></div></el-col>
       <el-col :span="11">
         <h1>修改后合约</h1>
         <d2-highlight :code="outputText" ></d2-highlight>

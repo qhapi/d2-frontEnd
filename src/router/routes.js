@@ -71,6 +71,15 @@ const frameIn = [
         component: _import('system/detectResult')
       },
       {
+        path: 'fuzzTest',
+        name: 'fuzzTest',
+        meta: {
+          title: '底层模糊测试',
+          auth: true
+        },
+        component: _import('system/fuzzTest')
+      },
+      {
         // path: '/udetail/:channelname/:uid',
         path: 'locateMul',
         name: 'locateMul',

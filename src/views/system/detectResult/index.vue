@@ -73,6 +73,7 @@ export default {
       // eslint-disable-next-line no-sequences
     ]
     this.generateData()
+    this.initEcharts()
   },
   mounted () {
     this.initEcharts()
