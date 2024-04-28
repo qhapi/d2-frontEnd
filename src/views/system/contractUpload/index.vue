@@ -74,7 +74,7 @@ export default {
     // 跳转到检测结果页面的方法
     detect () {
       this.$refs.upload.submit()
-      this.$router.push('detectResult')
+      this.$router.push('resultPage')
     }
   }
 }

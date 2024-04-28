@@ -61,6 +61,16 @@ const frameIn = [
       //   },
       //   component: _import('system/profile')
       // },
+      //汇总页面
+      {
+        path: 'resultPage',
+        name: 'resultPage',
+        meta: {
+          title: '检测结果',
+          auth: true
+        },
+        component: _import('system/resultPage')
+      },
       {
         path: 'detectResult',
         name: 'detectResult',
