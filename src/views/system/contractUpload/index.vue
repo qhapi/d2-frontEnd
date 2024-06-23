@@ -52,9 +52,9 @@ export default {
       console.log(file)
     },
     beforeUpload (file) {
-      const isBinOrSol = file.name.endsWith('.bin') || file.name.endsWith('.sol')
+      const isBinOrSol = file.name.endsWith('.bin') || file.name.endsWith('.sol') || file.name.endsWith('.pdf')
       if (!isBinOrSol) {
-        this.$message.error('只能上传 .bin 或 .sol 格式的文件')
+        this.$message.error('只能上传 .bin 或 .sol 或 .pdf 格式的文件')
         return false
       }
       // 大小限制
