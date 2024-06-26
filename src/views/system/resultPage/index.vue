@@ -33,10 +33,10 @@
 </template>
 
 <script>
-import * as echarts from 'echarts';
+import * as echarts from 'echarts'
 
 export default {
-    data () {
+  data () {
     return {
       myChart: {},
       myChartStyle: { width: '100%', height: '520px', background: 'white' },
@@ -53,94 +53,94 @@ export default {
       pageSizes: [10, 20, 50, 100],
       PageSize: 10,
       chartData: null, // 用来保存图表的数据
-      showChart: true, // 控制图表是否显示
+      showChart: true // 控制图表是否显示
     }
-    },
-    computed: {
-    },
-    mounted () {
+  },
+  computed: {
+  },
+  mounted () {
+    this.$nextTick(() => {
+      this.initEcharts()
+      if (this.chartData) {
+        this.myChart.setOption(this.chartData) // 恢复图表的数据
+      }
+    })
+  },
+  beforeRouteLeave (to, from, next) {
+    this.chartData = this.myChart.getOption() // 保存图表的数据
+    if (this.myChart != null) {
+      this.myChart.dispose()
+      this.myChart = null
+    }
+    next()
+  },
+  watch: {
+    showChart (newVal, oldVal) {
+      if (newVal && !oldVal) {
         this.$nextTick(() => {
-            this.initEcharts();
-            if (this.chartData) {
-                this.myChart.setOption(this.chartData); // 恢复图表的数据
-            }
-        });
-    },
-    beforeRouteLeave(to, from, next) {
-        this.chartData = this.myChart.getOption(); // 保存图表的数据
+          this.initEcharts()
+        })
+      } else if (!newVal && oldVal) {
         if (this.myChart != null) {
-            this.myChart.dispose();
-            this.myChart = null;
+          this.myChart.dispose()
+          this.myChart = null
         }
-        next();
-    },
-    watch: {
-        showChart(newVal, oldVal) {
-            if (newVal && !oldVal) {
-                this.$nextTick(() => {
-                    this.initEcharts();
-                });
-            } else if (!newVal && oldVal) {
-                if (this.myChart != null) {
-                    this.myChart.dispose();
-                    this.myChart = null;
-                }
-            }
-        }
-    },
-    methods: {
-        navigateTo(module) {
-            this.$router.push({ path: module });
-        },
-        initEcharts() {
-            const option = {
-                title: {
-                    text: '漏洞检测结果',
-                    subtext: 'test',
-                    left: 'center'
-                },
-                tooltip: {
-                    trigger: 'item',
-                    formatter: '{a} <br/>{b} : {c} ({d}%)'
-                },
-                legend: {
-                    orient: 'vertical',
-                    left: 'left',
-                    data: ['正常', '漏洞1', '漏洞2', '漏洞3', '漏洞4']
-                },
-                series: [
-                    {
-                    name: '漏洞比例',
-                    type: 'pie',
-                    radius: '50%',
-                    data: this.data,
-                    emphasis: {
-                        itemStyle: {
-                        shadowBlur: 10,
-                        shadowOffsetX: 0,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                        }
-                    },
-                    itemStyle: {
-                        normal: {
-                        label: {
-                            show: true,
-                            formatter: '{b} : {c} ({d}%)'
-                        },
-                        labelLine: {show: true}
-                        }
-                    }
-                    }
-                ]
-            };
-            this.myChart = echarts.init(document.getElementById('mychart'));
-            this.myChart.setOption(option);
-            window.addEventListener('resize', () => {
-                this.myChart.resize();
-            });
-        }
+      }
     }
-};
+  },
+  methods: {
+    navigateTo (module) {
+      this.$router.push({ path: module })
+    },
+    initEcharts () {
+      const option = {
+        title: {
+          text: '漏洞检测结果',
+          subtext: 'test',
+          left: 'center'
+        },
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b} : {c} ({d}%)'
+        },
+        legend: {
+          orient: 'vertical',
+          left: 'left',
+          data: ['正常', '漏洞1', '漏洞2', '漏洞3', '漏洞4']
+        },
+        series: [
+          {
+            name: '漏洞比例',
+            type: 'pie',
+            radius: '50%',
+            data: this.data,
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            },
+            itemStyle: {
+              normal: {
+                label: {
+                  show: true,
+                  formatter: '{b} : {c} ({d}%)'
+                },
+                labelLine: { show: true }
+              }
+            }
+          }
+        ]
+      }
+      this.myChart = echarts.init(document.getElementById('mychart'))
+      this.myChart.setOption(option)
+      window.addEventListener('resize', () => {
+        this.myChart.resize()
+      })
+    }
+  }
+}
 </script>
 
 <style>

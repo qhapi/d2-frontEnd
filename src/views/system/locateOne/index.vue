@@ -50,16 +50,6 @@ export default {
     }
   },
   methods: {
-    onSubmit () {
-      console.log(this.form)
-      axios.post('/api/create', this.form, { emulateJSON: true }, { headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8' } }
-      ).then(response => {
-        console.log('提交成功')
-      })
-    },
-    httpRequest (option) {
-      this.form.fileList.push(option)
-    },
     chooseMethod (label) {
       switch (label) {
         case '1':
