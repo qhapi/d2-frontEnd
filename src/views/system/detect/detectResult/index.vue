@@ -94,11 +94,11 @@ export default {
       this.currentPage = val
     },
     buttonClicked () {
-      this.$router.push('/locateMul') // 转到修复界面
+      this.$router.push('/detect/locateMul') // 转到修复界面
     },
     rowClicked (row, column, event) {
       console.log(row)
-      this.$router.push('/locateOne') // 转到对应合约的漏洞修复处
+      this.$router.push('/detect/locateOne') // 转到对应合约的漏洞修复处
     },
     initEcharts () {
       // const xdata = Array.from({ length: this.round }, (_, i) => i + 1)

@@ -5,7 +5,7 @@
                 <el-card class="box-card">
                     <h2>漏洞检测结果</h2>
                     <div class="echart" id="mychart" :style="myChartStyle" v-if="showChart"></div>
-                    <el-button type="text" @click="navigateTo('/detectResult')">跳转</el-button>
+                    <el-button type="text" @click="navigateTo('/detect/detectResult')">跳转</el-button>
                 </el-card>
             </el-col>
             <el-col :span="10" @click="navigateTo('/fuzzTest')">
@@ -17,9 +17,9 @@
         </el-row>
 
         <el-row :gutter="20">
-            <el-col :span="10" @click="navigateTo('/locateMul')">
+            <el-col :span="10" @click="navigateTo('/detect/locateMul')">
                 <el-card class="box-card">
-                    <el-button type="text" @click="navigateTo('/locateMul')">跳转</el-button>
+                    <el-button type="text" @click="navigateTo('/detect/locateMul')">跳转</el-button>
                 </el-card>
             </el-col>
             <el-col :span="10">
