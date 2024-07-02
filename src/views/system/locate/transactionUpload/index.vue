@@ -20,7 +20,6 @@
       </el-col>
     </el-row>
 
-
     <el-row>
       <el-col offset="16">
         <el-button icon="el-icon-plus" @click="addFaultlessInput">增加正确交易地址</el-button>
@@ -31,9 +30,7 @@
   </d2-container>
 </template>
 
-
 <script>
-
 
 export default {
   name: 'transactionUpload',
@@ -41,23 +38,44 @@ export default {
   data () {
     return {
       faultless_txhashs: [
-        { placeholder: '请输入正常交易地址', model: '' }
+        { placeholder: '请输入正常交易地址', model: '0x90fb0c9976361f537330a5617a404045ffb3fef5972cf67b531386014eeae7a9' }
       ],
       fault_txhashs: [
-        { placeholder: '请输入故障交易地址', model: '' }
+        { placeholder: '请输入故障交易地址', model: '0x7df39084b561ee2e7809e690f11e8e258dc65b6128399acbacf1f2433308de6a' },
+        { placeholder: '请输入故障交易地址', model: '0xddd734c1f3e097d3d1cdd7d4c0ffae166b39992a1d055008bf6660b8c0b7582e' },
+        { placeholder: '请输入故障交易地址', model: '0x5c1d151599bbacc19a09dfee888d3be2ccf3e2fa781679b9e0970e18b3300e44' }
       ]
     }
   },
 
   methods: {
-    addFaultlessInput() {
-      this.faultless_txhashs.push({ placeholder: '请输入正常交易地址', model: '' });
+    addFaultlessInput () {
+      this.faultless_txhashs.push({ placeholder: '请输入正常交易地址', model: '' })
     },
-    addFaultInput() {
-      this.fault_txhashs.push({ placeholder: '请输入故障交易地址', model: '' });
+    addFaultInput () {
+      this.fault_txhashs.push({ placeholder: '请输入故障交易地址', model: '' })
     },
-    buttonClicked() {
-      this.$router.push('locateResult')
+    buttonClicked () {
+      const faultTxHash = this.fault_txhashs.filter(input => input.model).map(input => input.model).join(',')
+      const faultlessTxHash = this.faultless_txhashs.filter(input => input.model).map(input => input.model).join(',')
+      fetch('http://localhost:5000/uploadAddress', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          faultTxHash: faultTxHash,
+          faultlessTxHash: faultlessTxHash
+        })
+      })
+        .then(response => response.text())
+        .then(
+          data => {
+            localStorage.setItem('data', data)
+            console.log(localStorage.getItem('data'))
+          })
+        .catch(error => console.error('Error:', error))
+      // this.$router.push('locateResult')
     }
   }
 }

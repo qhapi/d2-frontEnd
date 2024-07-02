@@ -50,26 +50,29 @@ export default {
   },
   methods: {
     chooseMethod (label) {
-      const axios = require('axios');
+      const axios = require('axios')
       const params = {
         module: 'contract',
         action: 'getsourcecode',
         address: '0xe11fc0b43ab98eb91e9836129d1ee7c3bc95df50',
         apikey: 'NYJZTBJJJW4SNVY2IPNMIFNNUNVCEYYQZC'
-      };
+      }
       const client = axios.create({
         baseURL: 'https://api.etherscan.io/api',
         timeout: 10000
-      });
+      })
       client.get('', { params })
         .then(response => {
           const jsonString = response.data.result[0].SourceCode.slice(1, -1).trim()
           const jsonObject = JSON.parse(jsonString)
+          const snippet = jsonString.slice(7944, 7944 + 173 + 1)
           console.log(jsonObject)
+          console.log(jsonString)
+          console.log(snippet)
         })
         .catch(error => {
           console.error('API Request Failed:', error)
-        });
+        })
       switch (label) {
         case '1':
           this.outputText = 'text1'
