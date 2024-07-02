@@ -21,35 +21,25 @@ const frameIn = [
         },
         component: _import('system/index')
       },
-      // 控制台
-      {
-        path: 'dashboard',
-        name: 'dashboard',
-        meta: {
-          title: '控制台',
-          auth: true
-        },
-        component: _import('system/dashboard')
-      },
       // 新建
       {
-        path: 'locateOne',
+        path: 'detect/locateOne',
         name: 'locateOne',
         meta: {
           title: '漏洞定位修复',
           auth: true
         },
-        component: _import('system/locateOne')
+        component: _import('system/detect/locateOne')
       },
       // 加入
       {
-        path: 'contractUpload',
+        path: 'detect/contractUpload',
         name: 'contractUpload',
         meta: {
           title: '漏洞挖掘',
           auth: true
         },
-        component: _import('system/contractUpload')
+        component: _import('system/detect/contractUpload')
       },
       // // 配置
       // {
@@ -72,13 +62,22 @@ const frameIn = [
         component: _import('system/resultPage')
       },
       {
-        path: 'detectResult',
+        path: '/locate/transactionUpload',
+        name: 'transactionUpload',
+        meta: {
+          title: '漏洞定位',
+          auth: true
+        },
+        component: _import('system/locate/transactionUpload')
+      },
+      {
+        path: 'detect/detectResult',
         name: 'detectResult',
         meta: {
           title: '漏洞检测结果',
           auth: true
         },
-        component: _import('system/detectResult')
+        component: _import('system/detect/detectResult')
       },
       {
         path: 'fuzzTest',
@@ -91,13 +90,13 @@ const frameIn = [
       },
       {
         // path: '/udetail/:channelname/:uid',
-        path: 'locateMul',
+        path: 'detect/locateMul',
         name: 'locateMul',
         meta: {
           title: '修复结果',
           auth: true
         },
-        component: _import('system/locateMul')
+        component: _import('system/detect/locateMul')
       },
       // // 演示页面
       // {

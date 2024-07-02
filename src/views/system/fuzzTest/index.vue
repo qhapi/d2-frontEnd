@@ -33,7 +33,7 @@
      </el-col>
       <el-col :span=14>
         <el-card class="box-card">
-          <div class="echart" id="mychart" :style="myChartStyle"></div>
+          <div class="echart" id="fuzzchart" :style="fuzzChartStyle"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -82,7 +82,7 @@
       </el-col>
       <el-col :span=14>
         <el-card class="box-card">
-          <div class="echart" id="mypie" :style="myChartStyle"></div>
+          <div class="echart" id="mypie" :style="fuzzChartStyle"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -110,8 +110,8 @@ export default {
   name: 'fuzzTest',
   data() {
     return {
-      myChart: {},
-      myChartStyle: { width: '100%', height: '366px', background: 'white' },
+      fuzzChart: {},
+      fuzzChartStyle: { width: '100%', height: '366px', background: 'white' },
       id: 0,
       times: [1714032919759,
         1714034719759,
@@ -215,6 +215,8 @@ export default {
       ]
     }
   },
+  created () {
+  },
   mounted() {
     this.initEcharts();
   },
@@ -279,10 +281,10 @@ export default {
           }
         ]
       }
-      this.myChart = echarts.init(document.getElementById('mychart'));
-      this.myChart.setOption(option);
+      this.fuzzChart = echarts.init(document.getElementById('fuzzchart'));
+      this.fuzzChart.setOption(option);
       window.addEventListener('resize', () => {
-        this.myChart.resize();
+        this.fuzzChart.resize();
       });
       this.mypie = echarts.init(document.getElementById('mypie'));
       this.mypie.setOption(option2);

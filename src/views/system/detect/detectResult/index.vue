@@ -1,6 +1,6 @@
 <template>
   <d2-container>
-    <div class="echart" id="mychart" :style="myChartStyle"></div>
+    <div class="echart" id="detectchart" :style="detectChartStyle"></div>
     <el-table ref="tableRef" :data="datadetail.slice((currentPage-1)*PageSize,currentPage*PageSize)" @row-click="rowClicked">
       <el-table-column prop="name" label="合约名称" sortable ></el-table-column>
       <el-table-column prop="type" label="漏洞类型" sortable ></el-table-column>
@@ -50,8 +50,8 @@ export default {
   name: 'detectResult',
   data () {
     return {
-      myChart: {},
-      myChartStyle: { width: '100%', height: '520px', background: 'white' },
+      detectChart: {},
+      detectChartStyle: { width: '100%', height: '520px', background: 'white' },
       data: [],
       datadetail: [],
       currentPage: 1,
@@ -73,7 +73,6 @@ export default {
       // eslint-disable-next-line no-sequences
     ]
     this.generateData()
-    this.initEcharts()
   },
   mounted () {
     this.initEcharts()
@@ -95,11 +94,11 @@ export default {
       this.currentPage = val
     },
     buttonClicked () {
-      this.$router.push('/locateMul') // 转到修复界面
+      this.$router.push('/detect/locateMul') // 转到修复界面
     },
     rowClicked (row, column, event) {
       console.log(row)
-      this.$router.push('/locateOne') // 转到对应合约的漏洞修复处
+      this.$router.push('/detect/locateOne') // 转到对应合约的漏洞修复处
     },
     initEcharts () {
       // const xdata = Array.from({ length: this.round }, (_, i) => i + 1)
@@ -132,14 +131,13 @@ export default {
           }
         ]
       }
-      this.myChart = echarts.init(document.getElementById('mychart'))
-      this.myChart.setOption(option)
+      this.detectChart = echarts.init(document.getElementById('detectchart'))
+      this.detectChart.setOption(option)
       // 随着屏幕大小调节图表
       window.addEventListener('resize', () => {
-        this.myChart.resize()
+        this.detectChart.resize()
       })
     }
-
     // fetchChartData () {
     //   axios.get('/api/chartData') // 发送请求获取图表数据
     //     .then(response => {

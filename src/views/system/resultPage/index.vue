@@ -4,9 +4,8 @@
             <el-col :span="12">
                 <el-card class="box-card">
                     <h2>漏洞检测结果</h2>
-                    <el-button type="text" @click="navigateTo('/detectResult')">跳转</el-button>
-                    <!-- 确保图表自适应容器大小 -->
-                    <div class="echart" ref="mychart" :style="myChartStyle" v-if="showChart"></div>
+                    <div class="echart" id="mychart" :style="myChartStyle" v-if="showChart"></div>
+                    <el-button type="text" @click="navigateTo('/detect/detectResult')">跳转</el-button>
                 </el-card>
             </el-col>
             <el-col :span="12">
@@ -43,10 +42,10 @@
             </el-col>
         </el-row>
 
-        <el-row :gutter="20" type="flex" style="flex-wrap: wrap;">
-            <el-col :span="12" @click="navigateTo('/locateMul')">
+        <el-row :gutter="20">
+            <el-col :span="10" @click="navigateTo('/detect/locateMul')">
                 <el-card class="box-card">
-                    <el-button type="text" @click="navigateTo('/locateMul')">跳转</el-button>
+                    <el-button type="text" @click="navigateTo('/detect/locateMul')">跳转</el-button>
                 </el-card>
             </el-col>
             <el-col :span="12">
@@ -112,49 +111,46 @@ export default {
       pageSizes: [10, 20, 50, 100],
       PageSize: 10,
       chartData: null, // 用来保存图表的数据
-      showChart: true, // 控制图表是否显示
-      results: [], // 保存检测结果
-      faults: [], // 保存 requestFaults 获取的数据
-      activeNames: [] // 初始化 el-collapse 的展开状态，默认为空数组
-    };
-  },
-  mounted() {
-    this.$nextTick(() => {
-      this.initEcharts();
-      if (this.chartData) {
-        this.myChart.setOption(this.chartData); // 恢复图表的数据
-      }
-    });
-
-    // 执行检测方法
-    this.detect();
-
-
-    // 调用 requestFaults 并处理返回的数据
-    requestFaults().then((response) => {
-        if (response && response.data) {
-            this.faults = response.data;
-        } else {
-            console.error('Faults data is not an array:', response);
-        }
-    }).catch((error) => {
-        console.error('Error fetching faults:', error);
-    });
-  },
-  beforeRouteLeave(to, from, next) {
-    this.chartData = this.myChart.getOption(); // 保存图表的数据
-    if (this.myChart != null) {
-      this.myChart.dispose();
-      this.myChart = null;
-      window.removeEventListener('resize', this.myChart.resize); // 移除事件监听器
+      showChart: true // 控制图表是否显示
     }
-    next();
+  },
+  computed: {
+  },
+  mounted () {
+    this.$nextTick(() => {
+      this.initEcharts()
+      if (this.chartData) {
+        this.myChart.setOption(this.chartData) // 恢复图表的数据
+      }
+    })
+  },
+  beforeRouteLeave (to, from, next) {
+    this.chartData = this.myChart.getOption() // 保存图表的数据
+    if (this.myChart != null) {
+      this.myChart.dispose()
+      this.myChart = null
+    }
+    next()
+  },
+  watch: {
+    showChart (newVal, oldVal) {
+      if (newVal && !oldVal) {
+        this.$nextTick(() => {
+          this.initEcharts()
+        })
+      } else if (!newVal && oldVal) {
+        if (this.myChart != null) {
+          this.myChart.dispose()
+          this.myChart = null
+        }
+      }
+    }
   },
   methods: {
-    navigateTo(module) {
-      this.$router.push({ path: module });
+    navigateTo (module) {
+      this.$router.push({ path: module })
     },
-    initEcharts() {
+    initEcharts () {
       const option = {
         title: {
           text: '漏洞检测结果',
@@ -195,10 +191,10 @@ export default {
           }
         ]
       };
-      this.myChart = echarts.init(this.$refs.mychart);
-      this.myChart.setOption(option);
+      this.myChart = echarts.init(document.getElementById('mychart'))
+      this.myChart.setOption(option)
       window.addEventListener('resize', () => {
-        this.myChart.resize();
+        this.myChart.resize()
       });
     },
     // processData(responseData) {
