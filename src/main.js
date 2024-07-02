@@ -12,6 +12,19 @@ import router from './router'
 import { menuHeader, menuAside } from '@/menu'
 import { frameInRoutes } from '@/router/routes'
 
+// 模拟数据
+import './mock/index'
+
+import axios from 'axios'
+
+import mock from './mock/index';
+mock.init();
+ 
+// 同时设置全局 $axios 对象，这样就不用多次引用 axios 了
+ 
+Vue.prototype.$axios = axios
+
+
 // 核心插件
 Vue.use(d2Admin)
 
