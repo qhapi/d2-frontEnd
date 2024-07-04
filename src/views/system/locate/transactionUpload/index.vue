@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import { Loading } from 'element-ui'
 export default {
   name: 'transactionUpload',
 
@@ -72,13 +71,11 @@ export default {
         .then(response => response.text())
         .then(
           async data => {
-            const loading = Loading.service({ fullscreen: true })
             const db = await this.$store.dispatch('d2admin/db/database', {
               user: true
             })
             db.set('data', data).write()
             console.log(db.get('data').value())
-            loading.close()
             this.$router.push('/locate/locateResult')
           })
         .catch(error => console.error('Error:', error))

@@ -4,7 +4,7 @@
       <el-col :span="12">
         <el-card class="box-card">
           <h2>漏洞检测结果</h2>
-          <el-button type="text" @click="navigateTo('/detectResult')">跳转</el-button>
+          <el-button type="text" @click="navigateTo('/detect/detectResult')">跳转</el-button>
           <!-- 确保图表自适应容器大小 -->
           <div class="echart" ref="mychart" :style="myChartStyle" v-if="showChart"></div>
         </el-card>
@@ -44,9 +44,9 @@
     </el-row>
 
     <el-row :gutter="20" type="flex" style="flex-wrap: wrap;">
-      <el-col :span="12" @click="navigateTo('/locateMul')">
+      <el-col :span="12" @click="navigateTo('/detect/locateMul')">
         <el-card class="box-card">
-          <el-button type="text" @click="navigateTo('/locateMul')">跳转</el-button>
+          <el-button type="text" @click="navigateTo('/detect/locateMul')">跳转</el-button>
         </el-card>
       </el-col>
       <el-col :span="12">
@@ -84,15 +84,7 @@
 
 <script>
 import * as echarts from 'echarts'
-import axios from 'axios'
-
-import Vue from 'vue'
-import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
-
-import { requestFaults } from '@/api/modules/api.js'
-
-Vue.use(ElementUI)
 
 export default {
   data () {
@@ -119,7 +111,7 @@ export default {
     }
   },
   created () {
-
+    this.showContracts()
   },
   mounted () {
     this.$nextTick(() => {
@@ -127,20 +119,6 @@ export default {
       if (this.chartData) {
         this.myChart.setOption(this.chartData) // 恢复图表的数据
       }
-    })
-
-    // 执行检测方法
-    this.detect()
-
-    // 调用 requestFaults 并处理返回的数据
-    requestFaults().then((response) => {
-      if (response && response.data) {
-        this.faults = response.data
-      } else {
-        console.error('Faults data is not an array:', response)
-      }
-    }).catch((error) => {
-      console.error('Error fetching faults:', error)
     })
   },
   methods: {
@@ -194,43 +172,20 @@ export default {
         this.myChart.resize()
       })
     },
-    // processData(responseData) {
-    //   // 将字符串分割成行
-    //   const lines = responseData.split('\n').filter(line => line.includes('Top-'));
-
-    //   // 提取有用的信息
-    //   const data = lines.map(line => {
-    //     const parts = line.split(' ');
-    //     const topNumber = parts[0].split('-')[1];
-    //     const contractAddress = parts[6];
-    //     const offsets = parts[9].split(':').map(Number);
-
-    //     return {
-    //       topNumber,
-    //       contractAddress,
-    //       startOffset: offsets[0],
-    //       endOffset: offsets[1]
-    //     };
-    //   });
-
-    //   console.log(data);
-    //   return data;
-    // },
-    async detect () {
-      try {
-        const response = await axios.get('http://localhost:5000/detect')
-        // const response = "loading model params...\n" +
-        //     "collecting transaction executing data...\n" +
-        //     "Top-0: fault function at contracts/SushiMaker.sol -> 0xe11fc0b43ab98eb91e9836129d1ee7c3bc95df50, offset is 1689:185\n" +
-        //     "Top-1: fault function at contracts/SushiMaker.sol -> 0xe11fc0b43ab98eb91e9836129d1ee7c3bc95df50, offset is 3574:738\n" +
-        //     "Top-2: fault function at contracts/SushiMaker.sol -> 0xe11fc0b43ab98eb91e9836129d1ee7c3bc95df50, offset is 4426:2288\n" +
-        //     "Top-3: fault function at contracts/SushiMaker.sol -> 0xe11fc0b43ab98eb91e9836129d1ee7c3bc95df50, offset is 7944:173\n"
-        //     "Top-4: fault function at contracts/SushiMaker.sol -> 0xe11fc0b43ab98eb91e9836129d1ee7c3bc95df50, offset is 2988:109";
-        this.faults = response.data
-        console.log(this.faults)
-      } catch (error) {
-        console.error('Detection failed:', error)
-        this.faults = 'Error fetching results'
+    async showContracts () {
+      const db = await this.$store.dispatch('d2admin/db/database', {
+        user: true
+      })
+      const faultLines = db.get('data').value().split('\n')
+      console.log(faultLines)
+      for (let i = 0; i < faultLines.length - 1; i++) {
+        const values = faultLines[i].split(',')
+        this.faults.push({
+          rank: values[0],
+          description: values[1],
+          address: values[2],
+          offset: values[3]
+        })
       }
     }
   }

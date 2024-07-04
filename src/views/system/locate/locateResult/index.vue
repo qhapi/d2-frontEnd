@@ -1,28 +1,28 @@
 <template>
-  <d2-container>
-    <el-row :gutter="20" type="flex"  v-loading="loading" style="flex-wrap: wrap;">
-      <el-col :span="24">
-        <el-collapse v-model="activeNames" accordion>
-          <el-collapse-item v-for="(result, index) in faults" :key="index">
-            <template slot="title">
+  <el-container>
+    <el-aside style="height: 100vh; color: white">
+          <el-menu>
+            <el-submenu v-for="(result, i) in faults" :key="i" :index='`${i+1}`'>
+              <template slot="title" >
                                 <span style="float:left; font-weight:bold; font-size:14px; color:#2C8DF4;">
-                                    {{ `Top-${index + 1}: ${result.description}` }}
+                                    {{ `Top-${i + 1}` }}
                                 </span>
-            </template>
-            <div>
-              <!--代码内容：-->
-            </div>
-            <div>代码地址：<a :href="result.address" target="_blank">{{ result.address }}</a></div>
-            <div>偏移量：{{ result.offset }}</div>
-            <div>嫌疑排行：{{ result.rank }}</div>
-          </el-collapse-item>
-        </el-collapse>
-      </el-col>
-    </el-row>
-  </d2-container>
+              </template>
+              <el-menu-item @click=showCode(i)>{{result.description}}</el-menu-item>
+            </el-submenu>
+          </el-menu>
+
+    </el-aside>
+    <el-main>
+      <d2-highlight :code=codeShow></d2-highlight>
+    </el-main>
+  </el-container>
 </template>
 
 <script>
+
+import { parseInt } from 'lodash'
+
 export default {
   name: 'locateResult',
 
@@ -30,7 +30,7 @@ export default {
     return {
       results: [], // 保存检测结果
       faults: [], // 保存 requestFaults 获取的数据
-      activeNames: [] // 初始化 el-collapse 的展开状态，默认为空数组
+      codeShow: ''
     }
   },
   created () {
@@ -45,14 +45,57 @@ export default {
       for (let i = 0; i < faultLines.length - 1; i++) {
         const values = faultLines[i].split(',')
         this.faults.push({
-          rank: `Top-${values[0]}`,
-          description: `fault function at ${values[1]}`,
+          rank: values[0],
+          description: values[1],
           address: values[2],
           offset: values[3]
         })
       }
+    },
+    showCode (index) {
+      const axios = require('axios')
+      const params = {
+        module: 'contract',
+        action: 'getsourcecode',
+        address: this.faults[index].address,
+        apikey: 'ETU946475U9T641V6AYCMPH6YXSRSBVNXH'
+      }
+      console.log(params)
+      const client = axios.create({
+        baseURL: 'https://api.etherscan.io/api',
+        timeout: 10000,
+        proxy: {
+          host: '127.0.0.1',
+          port: 7890
+        }
+      })
+      const begin = parseInt(this.faults[index].offset.split(':')[0], 10)
+      const end = begin + parseInt(this.faults[index].offset.split(':')[1], 10)
+      client.get('', { params })
+        .then(response => {
+          const jsonString = response.data.result[0].SourceCode.slice(1, -1).trim()
+          const jsonObject = JSON.parse(jsonString)
+          const snippet1 = jsonString.slice(begin, end)
+          const snippet2 = JSON.stringify(jsonObject.sources).slice(begin, end)
+          console.log(jsonObject)
+          console.log(jsonString)
+          console.log(snippet1)
+          console.log(snippet2)
+          console.log(begin)
+          console.log(end)
+          this.codeShow = snippet1.replace(/\\n/g, '\n')
+        })
+        .catch(error => {
+          console.error('API Request Failed:', error)
+        })
     }
   }
 }
 
 </script>
+<style>
+body, html, #app {
+  height: 100%;
+  margin: 0;
+}
+</style>
