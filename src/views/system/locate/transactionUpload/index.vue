@@ -31,19 +31,20 @@
 </template>
 
 <script>
-
+import { Loading } from 'element-ui'
 export default {
   name: 'transactionUpload',
 
   data () {
     return {
       faultless_txhashs: [
-        { placeholder: '请输入正常交易地址', model: '0x90fb0c9976361f537330a5617a404045ffb3fef5972cf67b531386014eeae7a9' }
+        { placeholder: '请输入正常交易地址', model: '0x7df39084b561ee2e7809e690f11e8e258dc65b6128399acbacf1f2433308de6a' },
+        { placeholder: '请输入正常交易地址', model: '0xddd734c1f3e097d3d1cdd7d4c0ffae166b39992a1d055008bf6660b8c0b7582e' },
+        { placeholder: '请输入正常交易地址', model: '0x5c1d151599bbacc19a09dfee888d3be2ccf3e2fa781679b9e0970e18b3300e44' }
+
       ],
       fault_txhashs: [
-        { placeholder: '请输入故障交易地址', model: '0x7df39084b561ee2e7809e690f11e8e258dc65b6128399acbacf1f2433308de6a' },
-        { placeholder: '请输入故障交易地址', model: '0xddd734c1f3e097d3d1cdd7d4c0ffae166b39992a1d055008bf6660b8c0b7582e' },
-        { placeholder: '请输入故障交易地址', model: '0x5c1d151599bbacc19a09dfee888d3be2ccf3e2fa781679b9e0970e18b3300e44' }
+        { placeholder: '请输入故障交易地址', model: '0x90fb0c9976361f537330a5617a404045ffb3fef5972cf67b531386014eeae7a9' }
       ]
     }
   },
@@ -70,9 +71,15 @@ export default {
       })
         .then(response => response.text())
         .then(
-          data => {
-            localStorage.setItem('data', data)
-            console.log(localStorage.getItem('data'))
+          async data => {
+            const loading = Loading.service({ fullscreen: true })
+            const db = await this.$store.dispatch('d2admin/db/database', {
+              user: true
+            })
+            db.set('data', data).write()
+            console.log(db.get('data').value())
+            loading.close()
+            this.$router.push('/locate/locateResult')
           })
         .catch(error => console.error('Error:', error))
       // this.$router.push('locateResult')

@@ -51,7 +51,7 @@ const frameIn = [
       //   },
       //   component: _import('system/profile')
       // },
-      //汇总页面
+      // 汇总页面
       {
         path: 'resultPage',
         name: 'resultPage',
@@ -69,6 +69,15 @@ const frameIn = [
           auth: true
         },
         component: _import('system/locate/transactionUpload')
+      },
+      {
+        path: 'locate/locateResult',
+        name: 'locateResult',
+        meta: {
+          title: '漏洞定位结果',
+          auth: true
+        },
+        component: _import('system/locate/locateResult')
       },
       {
         path: 'detect/detectResult',

@@ -65,10 +65,12 @@ export default {
         .then(response => {
           const jsonString = response.data.result[0].SourceCode.slice(1, -1).trim()
           const jsonObject = JSON.parse(jsonString)
-          const snippet = jsonString.slice(7944, 7944 + 173 + 1)
+          const snippet1 = jsonString.slice(1689, 1689 + 185 + 1)
+          const snippet2 = JSON.stringify(jsonObject.sources).slice(2988, 2988 + 109 + 1)
           console.log(jsonObject)
           console.log(jsonString)
-          console.log(snippet)
+          console.log(snippet1)
+          console.log(snippet2)
         })
         .catch(error => {
           console.error('API Request Failed:', error)

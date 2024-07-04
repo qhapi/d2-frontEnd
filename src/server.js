@@ -1,6 +1,6 @@
 const express = require('express')
 const multer = require('multer')
-const { spawn } = require('child_process');
+const { spawn } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 const cors = require('cors')
@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({
   extended: true
 }))
 app.use(cors())
-app.use(bodyParser.json({limit: '1mb'}))
+app.use(bodyParser.json({ limit: '1mb' }))
 
 const port = 5000
 
@@ -40,38 +40,41 @@ app.post('/uploadFile', upload.single('file'), (req, res) => {
 
 app.post('/uploadAddress', (req, res) => {
   // 从请求体中获取参数
-  const { faultTxHash, faultlessTxHash } = req.body;
+  const { faultTxHash, faultlessTxHash } = req.body
 
   // 设置 Python 脚本路径和参数
-  const pythonPath = 'D:\\anaconda3\\envs\\VulDetector\\python.exe';
-  const scriptPath = 'D:\\DAPPFL\\locate.py';
+  const pythonPath = 'D:\\anaconda3\\envs\\VulDetector\\python.exe'
+  const scriptPath = 'D:\\DAPPFL\\locate.py'
   const args = [
     '--fault_txhash', faultTxHash,
     '--faultless_txhash', faultlessTxHash,
     '--net', 'Ethereum',
     '--model_path', 'D:\\DAPPFL\\misc\\model.pth',
     '--p_norm', '6'
-  ];
+  ]
   console.log('running')
-  const pythonProcess = spawn(pythonPath, [scriptPath, ...args]);
+  console.log(faultTxHash)
+  console.log(faultlessTxHash)
+  // 启动 Python 子进程
+  const pythonProcess = spawn(pythonPath, [scriptPath, ...args])
 
-  let outputData = '';
+  let outputData = ''
   pythonProcess.stdout.on('data', (data) => {
-    outputData += data.toString();
-  });
+    outputData += data.toString()
+  })
 
   pythonProcess.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`);
-  });
+    console.error(`stderr: ${data}`)
+  })
 
   pythonProcess.on('close', (code) => {
     if (code === 0) {
-      res.send(outputData);
+      res.send(outputData)
     } else {
-      res.status(500).send(`Python script exited with code ${code}`);
+      res.status(500).send(`Python script exited with code ${code}`)
     }
-  });
-});
+  })
+})
 
 // 创建uploads文件夹
 const uploadsDir = path.join(__dirname, 'uploads')
