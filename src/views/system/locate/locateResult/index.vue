@@ -4,9 +4,9 @@
           <el-menu>
             <el-submenu v-for="(result, i) in faults" :key="i" :index='`${i+1}`'>
               <template slot="title" >
-                                <span style="float:left; font-weight:bold; font-size:14px; color:#2C8DF4;">
-                                    {{ `Top-${i + 1}` }}
-                                </span>
+                <span style="float:left; font-weight:bold; font-size:14px; color:#2C8DF4;">
+                  {{ `Top-${i + 1}` }}
+                </span>
               </template>
               <el-menu-item @click=showCode(i)>{{result.description}}</el-menu-item>
             </el-submenu>

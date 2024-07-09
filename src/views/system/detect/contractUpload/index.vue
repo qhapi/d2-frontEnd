@@ -8,7 +8,8 @@
           ref="upload"
           class="upload-demo"
           drag
-          action="http://localhost:5000/upload"
+          action="http://localhost:5000/uploadFile"
+          :data=this.$store.state.d2admin.user.info
           :before-upload="beforeUpload"
           multiple
           :on-preview="handlePreview"
@@ -74,6 +75,19 @@ export default {
     // 跳转到检测结果页面的方法
     detect () {
       this.$refs.upload.submit()
+      fetch('http://localhost:5000/slither', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: 'Admin', // this.$store.state.d2admin.user.info.username,
+          currentWorkDirectory: 'SushiMaker',
+          mainPath: 'contracts'
+        })
+      })
+        .then(response => response.text())
+        .then(text => console.log(text))
       this.$router.push('../resultPage')
     }
   }

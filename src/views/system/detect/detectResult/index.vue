@@ -1,5 +1,20 @@
 <template>
   <d2-container>
+    <el-aside style="height: 100vh; color: white">
+      <el-menu unique-opened @open="showCode">
+        <el-submenu v-for="(contract, i) in contracts" :key="i" :index='`${i}`' @click="showCode(contract)">
+          <template slot="title" >
+                <span style="float:left; font-weight:bold; font-size:14px; color:#2C8DF4;">
+                  {{ contract }}
+                </span>
+          </template>
+          <el-menu-item v-for="(fault, j) in getFaults(contract)" :key="j">{{fault.check}}</el-menu-item>
+        </el-submenu>
+      </el-menu>
+    </el-aside>
+    <el-main>
+      <d2-highlight :code=codeShow></d2-highlight>
+    </el-main>
     <div class="echart" id="detectchart" :style="detectChartStyle"></div>
     <el-table ref="tableRef" :data="datadetail.slice((currentPage-1)*PageSize,currentPage*PageSize)" @row-click="rowClicked">
       <el-table-column prop="name" label="合约名称" sortable ></el-table-column>
@@ -23,26 +38,7 @@
     </el-row>
   </d2-container>
 </template>
-<style>
-.el-row {
-  margin-top: 20px;
-  margin-bottom: 20px;
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-.el-col {
-  border-radius: 4px;
-}
-.grid-content {
-  border-radius: 4px;
-  min-height: 36px;
-}
-.row-bg {
-  padding: 10px 0;
-  background-color: #f9fafc;
-}
-</style>
+
 <script>
 // import axios from 'axios'
 import * as echarts from 'echarts'
@@ -50,6 +46,9 @@ export default {
   name: 'detectResult',
   data () {
     return {
+      contracts: [],
+      jsonData: {},
+      codeShow: '',
       detectChart: {},
       detectChartStyle: { width: '100%', height: '520px', background: 'white' },
       data: [],
@@ -73,6 +72,7 @@ export default {
       // eslint-disable-next-line no-sequences
     ]
     this.generateData()
+    this.getJSON()
   },
   mounted () {
     this.initEcharts()
@@ -137,19 +137,46 @@ export default {
       window.addEventListener('resize', () => {
         this.detectChart.resize()
       })
+    },
+    getJSON () {
+      fetch('http://localhost:5000/getSlitherJSON', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: 'Admin',
+          currentWorkDirectory: 'SushiMaker'
+        })
+      })
+        .then(response => response.json())
+        .then(jsonData => {
+          Object.keys(jsonData).forEach(file => {
+            this.contracts.push(file)
+          })
+          this.jsonData = jsonData
+        })
+    },
+    getFaults (contract) {
+      return this.jsonData[contract]
+    },
+    showCode (index, indexPath) {
+      fetch('http://localhost:5000/getSourceCode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: 'Admin',
+          currentWorkDirectory: 'SushiMaker',
+          fileName: this.contracts[index]
+        })
+      })
+        .then(response => response.text())
+        .then(text => {
+          this.codeShow = text
+        })
     }
-    // fetchChartData () {
-    //   axios.get('/api/chartData') // 发送请求获取图表数据
-    //     .then(response => {
-    //       // 更新 data 数据
-    //       this.data = response.data
-    //       // 初始化图表
-    //       this.initEcharts()
-    //     })
-    //     .catch(error => {
-    //       console.error('Error fetching chart data:', error)
-    //     })
-    // }
   }
 }
 </script>

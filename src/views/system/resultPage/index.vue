@@ -177,7 +177,6 @@ export default {
         user: true
       })
       const faultLines = db.get('data').value().split('\n')
-      console.log(faultLines)
       for (let i = 0; i < faultLines.length - 1; i++) {
         const values = faultLines[i].split(',')
         this.faults.push({
