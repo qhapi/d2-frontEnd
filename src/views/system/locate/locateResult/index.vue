@@ -1,93 +1,103 @@
 <template>
-  <el-container>
-    <el-aside style="height: 100vh; color: white">
-          <el-menu>
-            <el-submenu v-for="(result, i) in faults" :key="i" :index='`${i+1}`'>
-              <template slot="title" >
+  <d2-container>
+    <el-container>
+      <el-aside width="450px" style="max-height: 84vh">
+        <el-menu unique-opened @open="showCode" ref="menu">
+          <el-submenu v-for="(contract, i) in contracts" :key="i" :index='`${i}`' @click="showCode(contract)">
+            <template slot="title" >
                 <span style="float:left; font-weight:bold; font-size:14px; color:#2C8DF4;">
-                  {{ `Top-${i + 1}` }}
+                  {{ contract }}
                 </span>
-              </template>
-              <el-menu-item @click=showCode(i)>{{result.description}}</el-menu-item>
-            </el-submenu>
-          </el-menu>
-
-    </el-aside>
-    <el-main>
-      <d2-highlight :code=codeShow></d2-highlight>
-    </el-main>
-  </el-container>
+            </template>
+            <el-menu-item v-for="(fault, j) in getFaults(contract)" :key="j" @click="handleMenuItemClicked(fault)">
+              {{`${fault.check}:${fault.lines[0]}-${fault.lines[fault.lines.length-1]}`}}
+            </el-menu-item>
+          </el-submenu>
+        </el-menu>
+      </el-aside>
+      <el-main style="max-height: 84vh">
+        <el-card style="position: fixed; z-index: 100; bottom: 20px; width: 120vh">
+          <h1 style="position: relative">
+            漏洞描述
+            <el-button style="right: 20px; position: absolute">
+            通过交易地址快速定位
+            </el-button>
+          </h1>
+          <el-divider/>
+          <el-row>
+            {{this.description}}
+          </el-row>
+        </el-card>
+        <div>
+          <d2-highlight :code=codeShow :redLines=this.redLines></d2-highlight>
+        </div>
+      </el-main>
+    </el-container>
+  </d2-container>
 </template>
 
 <script>
 
-import { parseInt } from 'lodash'
+// import { parseInt } from 'lodash'
 
 export default {
   name: 'locateResult',
 
   data () {
     return {
-      results: [], // 保存检测结果
-      faults: [], // 保存 requestFaults 获取的数据
+      description: '',
+      redLines: [],
+      contracts: [],
+      jsonData: {},
       codeShow: ''
     }
   },
   created () {
-    this.showContracts()
+    this.getJSON()
   },
   methods: {
-    async showContracts () {
-      const db = await this.$store.dispatch('d2admin/db/database', {
-        user: true
-      })
-      const faultLines = db.get('data').value().split('\n')
-      for (let i = 0; i < faultLines.length - 1; i++) {
-        const values = faultLines[i].split(',')
-        this.faults.push({
-          rank: values[0],
-          description: values[1],
-          address: values[2],
-          offset: values[3]
+    getJSON () {
+      fetch('http://localhost:5000/getSlitherJSON', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: 'Admin',
+          currentWorkDirectory: 'SushiMaker'
         })
-      }
+      })
+        .then(response => response.json())
+        .then(jsonData => {
+          Object.keys(jsonData).forEach(file => {
+            this.contracts.push(file)
+          })
+          this.jsonData = jsonData
+        })
     },
-    showCode (index) {
-      const axios = require('axios')
-      const params = {
-        module: 'contract',
-        action: 'getsourcecode',
-        address: this.faults[index].address,
-        apikey: 'ETU946475U9T641V6AYCMPH6YXSRSBVNXH'
-      }
-      console.log(params)
-      const client = axios.create({
-        baseURL: 'https://api.etherscan.io/api',
-        timeout: 10000,
-        proxy: {
-          host: '127.0.0.1',
-          port: 7890
-        }
+    getFaults (contract) {
+      return this.jsonData[contract]
+    },
+    showCode (index, indexPath) {
+      fetch('http://localhost:5000/getSourceCode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: 'Admin',
+          currentWorkDirectory: 'SushiMaker',
+          fileName: this.contracts[index]
+        })
       })
-      const begin = parseInt(this.faults[index].offset.split(':')[0], 10)
-      const end = begin + parseInt(this.faults[index].offset.split(':')[1], 10)
-      client.get('', { params })
-        .then(response => {
-          const jsonString = response.data.result[0].SourceCode.slice(1, -1).trim()
-          const jsonObject = JSON.parse(jsonString)
-          const snippet1 = jsonString.slice(begin, end)
-          const snippet2 = JSON.stringify(jsonObject.sources).slice(begin, end)
-          console.log(jsonObject)
-          console.log(jsonString)
-          console.log(snippet1)
-          console.log(snippet2)
-          console.log(begin)
-          console.log(end)
-          this.codeShow = snippet1.replace(/\\n/g, '\n')
+        .then(response => response.text())
+        .then(text => {
+          this.codeShow = text
         })
-        .catch(error => {
-          console.error('API Request Failed:', error)
-        })
+    },
+    handleMenuItemClicked (fault) {
+      this.redLines = fault.lines
+      this.description = fault.description
     }
   }
 }

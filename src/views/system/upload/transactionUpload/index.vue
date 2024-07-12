@@ -79,7 +79,6 @@ export default {
             this.$router.push('/locate/locateResult')
           })
         .catch(error => console.error('Error:', error))
-      // this.$router.push('locateResult')
     }
   }
 }
