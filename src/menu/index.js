@@ -18,7 +18,7 @@ function supplementPath (menu) {
 export const menuHeader = supplementPath([
   { path: '/index', title: '首页', icon: 'home' },
   // { path: '/dashboard', title: '控制台', icon: 'tachometer' },
-  { path: '/detect/contractUpload', title: '漏洞挖掘', icon: 'list' },
+  // { path: '/detect/contractUpload', title: '漏洞挖掘', icon: 'list' },
   { path: '/locate/transactionUpload', title: '漏洞定位修复', icon: 'plus' },
   { path: '/fuzzTest', title: '底层系统模糊测试', icon: 'desktop' }
   // { path: '/profile', title: '个人设置', icon: 'locateMul' },
@@ -36,7 +36,7 @@ export const menuHeader = supplementPath([
 export const menuAside = supplementPath([
   { path: '/index', title: '首页', icon: 'home' },
   // { path: '/dashboard', title: '控制台', icon: 'tachometer' },
-  { path: '/detect/contractUpload', title: '漏洞挖掘', icon: 'list' },
+  // { path: '/detect/contractUpload', title: '漏洞挖掘', icon: 'list' },
   { path: '/locate/transactionUpload', title: '漏洞定位修复', icon: 'plus' },
   { path: '/fuzzTest', title: '底层系统模糊测试', icon: 'desktop' }
   // { path: '/profile', title: '个人设置', icon: 'locateMul' },

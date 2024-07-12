@@ -6,22 +6,74 @@
         <h1 class="cover-title">多功能区块链漏洞检测修复平台</h1>
         <p class="cover-description">欢迎使用我们的平台，致力于解决区块链系统中的安全隐患。</p>
         <!-- 点击按钮跳转到 contractUpload 页面 -->
-        <el-button type="primary" @click="startClicked" class="cover-button">开始使用</el-button>
+        <el-dropdown @command="handleDropdownClicked">
+          <el-button type="primary">
+            更多菜单<i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command = 'multiple'>上传多文件项目</el-dropdown-item>
+            <el-dropdown-item command = 'single'>上传单文件项目</el-dropdown-item>
+            <el-dropdown-item command = 'verified'>已验证合约</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
       </div>
-      <template slot="footer">
-        <div class="btn-group">
-          <span class="btn-group__btn">面向多层次的区块链漏洞挖掘技术研究</span>
-        </div>
-      </template>
+    <el-dialog
+      title="提交多文件项目"
+      :visible.sync="this.multipleDialogVisible"
+      width="60%">
+      <d2-container style="height: 80vh">
+        <el-row>
+          <h1>上传智能合约字节码文件</h1>
+          <el-col :offset="8">
+            <el-upload
+              ref="upload"
+              class="upload-demo"
+              drag
+              action="http://localhost:5000/uploadFile"
+              :data=this.$store.state.d2admin.user.info
+              :before-upload="beforeUpload"
+              multiple
+              :on-preview="handlePreview"
+              :auto-upload = "false"
+              :file-list="fileList">
+              <i class="el-icon-upload"></i>
+              <div class="el-upload__text">将智能合约字节码文件拖到此处，或<em>点击上传</em></div>
+            </el-upload>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col type="flex" justify="center" align="middle">
+            <el-button type="primary" @click="detect">检测合约</el-button>
+          </el-col>
+        </el-row>
+      </d2-container>
+    </el-dialog>
   </d2-container>
 </template>
-
 <script>
+
 export default {
+  name: 'index',
+  data () {
+    return {
+      multipleDialogVisible: false,
+      singleDialogVisble: false,
+      verifiedDialogVisble: false
+    }
+  },
   methods: {
-    startClicked () {
-      // 跳转到 contractUpload 页面
-      this.$router.push({ name: 'contractUpload' })
+    handleDropdownClicked (command) {
+      switch (command) {
+        case 'multiple':
+          this.multipleDialogVisible = true
+          break
+        case 'single':
+          this.singleDialogVisble = true
+          break
+        case 'verified':
+          this.verifiedDialogVisble = true
+          break
+      }
     }
   }
 }

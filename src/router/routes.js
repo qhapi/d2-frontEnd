@@ -32,15 +32,6 @@ const frameIn = [
         component: _import('system/detect/locateOne')
       },
       // 加入
-      {
-        path: 'detect/contractUpload',
-        name: 'contractUpload',
-        meta: {
-          title: '漏洞挖掘',
-          auth: true
-        },
-        component: _import('system/detect/contractUpload')
-      },
       // // 配置
       // {
       //   path: 'profile',
