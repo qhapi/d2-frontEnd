@@ -2,6 +2,7 @@ const express = require('express')
 const multer = require('multer')
 const { spawn } = require('child_process')
 const fs = require('fs')
+const AdmZip = require('adm-zip')
 const path = require('path')
 const cors = require('cors')
 const app = express()
@@ -17,11 +18,11 @@ const pythonPath = 'D:\\anaconda3\\envs\\VulDetector\\python.exe'
 // 设置存储文件的目录
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const userName = req.body.name
+    const userName = req.body.userName
     const dir = `${__dirname}/uploads/${userName}/`
     fs.mkdir(dir, { recursive: true }, (err) => {
       if (err) {
-        return cb(err)
+        cb(err)
       }
       cb(null, dir)
     })
@@ -36,8 +37,33 @@ const upload = multer({ storage: storage })
 // 处理文件上传的路由
 app.post('/uploadFile', upload.single('file'), (req, res) => {
   if (req.file) {
-    console.log(`文件上传成功：${req.file.originalname}`)
-    res.send('文件上传成功')
+    if (path.extname(req.file.originalname).toLowerCase() === '.zip') {
+      const zip = new AdmZip(req.file.path)
+      const extractPath = path.join(path.dirname(req.file.path), path.basename(req.file.originalname, '.zip'))
+      fs.mkdirSync(extractPath, { recursive: true })
+      zip.extractAllToAsync(extractPath, true, (err) => {
+        if (err) {
+          res.status(500).send('解压文件失败')
+        }
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error('Failed to delete the file:', err)
+          }
+          console.log('File deleted successfully')
+        })
+        res.send('文件上传并解压成功')
+      })
+    } else {
+      const extractPath = path.join(path.dirname(req.file.path), path.basename(req.file.originalname, '.sol'))
+      fs.mkdirSync(extractPath, { recursive: true })
+      fs.rename(req.file.path, path.join(extractPath, req.file.originalname), (err) => {
+        if (err) {
+          console.error('Failed to copy file:', err)
+        }
+        console.log('File copied successfully')
+      })
+      res.send('文件上传成功')
+    }
   } else {
     console.log('文件上传失败')
     res.status(400).send('文件上传失败')
@@ -79,16 +105,25 @@ app.post('/uploadAddress', (req, res) => {
 app.post('/slither', (req, res) => {
   const { userName, currentWorkDirectory, mainPath } = req.body
   const cwd = `${__dirname}\\uploads\\${userName}\\${currentWorkDirectory}\\`
-  const args = ['-m', 'slither.__main__', `${cwd}${mainPath}`, '--json', 'result.json']
+  const args = ['-m', 'slither', `${cwd}${mainPath}`, '--json', 'result.json']
   const options = {
     cwd: cwd
   }
-  console.log(cwd)
-  console.log(args)
-  // 启动 Python 子进程
   const pythonProcess = spawn(pythonPath, args, options)
+  pythonProcess.stderr.on('data', (data) => {
+    console.error(`stderr: ${data}`)
+  })
+  pythonProcess.on('error', (error) => {
+    console.error('Failed to start subprocess:', error)
+  })
   pythonProcess.on('close', (code) => {
     const parseProcess = spawn(pythonPath, [`${__dirname}\\uploads\\report2file.py`, `${__dirname}\\uploads\\${userName}\\${currentWorkDirectory}\\result.json`], options)
+    parseProcess.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`)
+    })
+    parseProcess.on('error', (error) => {
+      console.error('Failed to start subprocess:', error)
+    })
     parseProcess.on('close', (code) => {
       res.send('6')
     })

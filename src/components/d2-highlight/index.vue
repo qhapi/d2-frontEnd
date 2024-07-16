@@ -82,6 +82,7 @@ export default {
       this.highlightHTML = highlight.highlightAuto(code, [
         this.lang,
         'html',
+        'solidity',
         'javascript',
         'json',
         'css',

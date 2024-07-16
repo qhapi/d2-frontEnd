@@ -71,6 +71,15 @@ const frameIn = [
         component: _import('system/locate/locateResult')
       },
       {
+        path: 'locate/dappFLocateResult',
+        name: 'dappFLocateResult',
+        meta: {
+          title: 'DAPPSCAN定位结果',
+          auth: true
+        },
+        component: _import('system/locate/dappFLocateResult')
+      },
+      {
         path: 'detect/detectResult',
         name: 'detectResult',
         meta: {

@@ -1,5 +1,5 @@
 <template>
-  <d2-container>
+  <div>
     <el-row v-for="(input, index) in faultless_txhashs" :key="index">
       <el-col :offset="6" :span="12">
         <el-input
@@ -21,18 +21,18 @@
     </el-row>
 
     <el-row>
-      <el-col offset="16">
+      <el-col span="12" offset="12">
         <el-button icon="el-icon-plus" @click="addFaultlessInput">增加正确交易地址</el-button>
         <el-button icon="el-icon-plus" @click="addFaultInput">增加故障交易地址</el-button>
-        <el-button @click="buttonClicked">开始定位</el-button>
+        <el-button @click="buttonClicked" :loading="buttonLoad">开始定位</el-button>
       </el-col>
     </el-row>
-  </d2-container>
+  </div>
 </template>
 
 <script>
 export default {
-  name: 'transactionUpload',
+  name: 'TransactionUpload',
 
   data () {
     return {
@@ -44,7 +44,8 @@ export default {
       ],
       fault_txhashs: [
         { placeholder: '请输入故障交易地址', model: '0x90fb0c9976361f537330a5617a404045ffb3fef5972cf67b531386014eeae7a9' }
-      ]
+      ],
+      buttonLoad: false
     }
   },
 
@@ -56,6 +57,7 @@ export default {
       this.fault_txhashs.push({ placeholder: '请输入故障交易地址', model: '' })
     },
     buttonClicked () {
+      this.buttonLoad = true
       const faultTxHash = this.fault_txhashs.filter(input => input.model).map(input => input.model).join(',')
       const faultlessTxHash = this.faultless_txhashs.filter(input => input.model).map(input => input.model).join(',')
       fetch('http://localhost:5000/uploadAddress', {
@@ -76,10 +78,19 @@ export default {
             })
             db.set('data', data).write()
             console.log(db.get('data').value())
-            this.$router.push('/locate/locateResult')
           })
+        .then(() => { this.$router.push('/locate/dappFLocateResult') })
         .catch(error => console.error('Error:', error))
     }
   }
 }
 </script>
+
+<style>
+.el-row {
+  margin-bottom: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+</style>

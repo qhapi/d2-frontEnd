@@ -112,6 +112,7 @@ export default {
   },
   created () {
     this.showContracts()
+    console.log(this.data)
   },
   mounted () {
     this.$nextTick(() => {

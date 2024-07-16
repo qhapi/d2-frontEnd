@@ -2,9 +2,9 @@
   <d2-container>
     <el-row>
       <div class="echart" id="detectchart" :style="detectChartStyle"></div>
-      <el-table ref="tableRef" :data="datadetail.slice((currentPage-1)*PageSize,currentPage*PageSize)" @row-click="rowClicked">
+      <el-table ref="tableRef" :data="tableData.slice((currentPage-1)*PageSize,currentPage*PageSize)" @row-click="rowClicked">
         <el-table-column prop="name" label="合约名称" sortable ></el-table-column>
-        <el-table-column prop="type" label="漏洞类型" sortable ></el-table-column>
+        <el-table-column prop="classNum" label="漏洞数量" sortable ></el-table-column>
       </el-table>
     </el-row>
     <el-row>
@@ -19,9 +19,11 @@
         </el-pagination>
       </div>
     </el-row>
-    <el-row>
-      <el-col :span="20"><div class="grid-content"></div></el-col>
-      <el-col :span="4"><el-button @click="buttonClicked">全部修复</el-button></el-col>
+    <el-row style="position: relative">
+      <el-col :span='4' style="position: absolute; right: 10px">
+        <el-button @click="$router.push('/locate/locateResult')">详细信息</el-button>
+        <el-button @click="buttonClicked">全部修复</el-button>
+      </el-col>
     </el-row>
   </d2-container>
 </template>
@@ -33,41 +35,62 @@ export default {
   name: 'detectResult',
   data () {
     return {
+      pieData: [],
       detectChart: {},
       detectChartStyle: { width: '100%', height: '520px', background: 'white' },
-      data: [],
-      datadetail: [],
+      tableData: [],
       currentPage: 1,
       totalCount: 100,
       pageSizes: [10, 20, 50, 100],
-      PageSize: 10
+      PageSize: 10,
+      contracts: [],
+      jsonData: Object,
+      db: null
     }
   },
-  computed: {
-  },
   created () {
-    // eslint-disable-next-line no-unused-expressions
-    this.data = [
-      { value: 10480, name: '正常' },
-      { value: 735, name: '漏洞1' },
-      { value: 580, name: '漏洞2' },
-      { value: 484, name: '漏洞3' },
-      { value: 300, name: '漏洞4' }
-      // eslint-disable-next-line no-sequences
-    ]
-    this.generateData()
+    this.getData()
   },
   mounted () {
-    this.initEcharts()
   },
   methods: {
-    generateData () {
-      const states = ['修复成功', '修复异常', '修复失败'] // 可能的状态
-      this.datadetail = Array.from({ length: 100 }, (v, i) => ({
-        name: `test${i + 1}.sol`,
-        type: String(Math.floor(Math.random() * 10) + 1),
-        state: states[Math.floor(Math.random() * states.length)]
-      }))
+    async getData () {
+      const db = await this.$store.dispatch('d2admin/db/database', {
+        user: true
+      })
+      fetch('http://localhost:5000/getSlitherJSON', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          userName: this.$store.state.d2admin.user.info.name,
+          currentWorkDirectory: db.get('currentWorkDirectory')
+        })
+      })
+        .then(response => response.json())
+        .then(jsonData => {
+          Object.keys(jsonData).forEach(file => {
+            this.tableData.push({ name: file, classNum: jsonData[file].length })
+          })
+          this.totalCount = this.tableData.length
+          const checkCounts = {}
+          for (const file in jsonData) {
+            jsonData[file].forEach(issue => {
+              const checkType = issue.check
+              if (checkCounts[checkType]) {
+                checkCounts[checkType] += 1
+              } else {
+                checkCounts[checkType] = 1
+              }
+            })
+          }
+          this.pieData = Object.keys(checkCounts).map(check => ({
+            value: checkCounts[check],
+            name: check
+          }))
+          this.initEcharts()
+        })
     },
     handleSizeChange (val) {
       this.PageSize = val
@@ -84,11 +107,10 @@ export default {
       this.$router.push('/detect/locateOne') // 转到对应合约的漏洞修复处
     },
     initEcharts () {
-      // const xdata = Array.from({ length: this.round }, (_, i) => i + 1)
       const option = {
         title: {
           text: '漏洞检测结果',
-          subtext: 'test',
+          subtext: '',
           left: 'center'
         },
         tooltip: {
@@ -103,7 +125,7 @@ export default {
             name: '漏洞比例',
             type: 'pie',
             radius: '50%',
-            data: this.data,
+            data: this.pieData,
             emphasis: {
               itemStyle: {
                 shadowBlur: 10,
