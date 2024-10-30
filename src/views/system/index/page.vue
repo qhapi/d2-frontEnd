@@ -75,6 +75,10 @@
             </el-row>
           </el-col>
         </el-row>
+        <el-row type="flex" justify="center" :gutter="20">
+          <el-button type="primary" @click="handleQuickDetectButtonClicked">快速检测</el-button>
+          <el-button type="primary" @click="handleSlowDetectButtonClicked">慢速检测</el-button>
+        </el-row>
         <el-row>
           <el-card style="height: 30vh">
             示例图片
@@ -118,6 +122,10 @@
               </el-col>
             </el-row>
           </el-col>
+        </el-row>
+        <el-row type="flex" justify="center" :gutter="20">
+          <el-button type="primary" @click="handleQuickDetectButtonClicked">快速检测</el-button>
+          <el-button type="primary" @click="handleSlowDetectButtonClicked">慢速检测</el-button>
         </el-row>
         <el-row>
           <el-card style="height: 30vh">
@@ -249,6 +257,12 @@ export default {
         .then(text => {
           this.$router.push('../detect/detectResult')
         })
+    },
+    handleQuickDetectButtonClicked(){
+      this.$router.push('/locate/locateConfidence');
+    },
+    handleSlowDetectButtonClicked(){
+
     },
     handleDropdownClicked (command) {
       switch (command) {

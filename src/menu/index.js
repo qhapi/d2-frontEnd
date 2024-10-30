@@ -21,6 +21,7 @@ export const menuHeader = supplementPath([
   // { path: '/detect/contractUpload', title: '漏洞挖掘', icon: 'list' },
   { path: '/detect/detectResult', title: '漏洞检测结果', icon: 'tachometer' },
   { path: '/locate/locateResult', title: '漏洞定位结果', icon: 'list' },
+  { path: '/locate/locateConfidence', title: '漏洞置信度', icon: 'fa fa-square-full' },
   { path: '/fuzzTest', title: '底层系统模糊测试', icon: 'desktop' }
   // { path: '/profile', title: '个人设置', icon: 'locateMul' },
   // {
@@ -39,6 +40,7 @@ export const menuAside = supplementPath([
   // { path: '/dashboard', title: '控制台', icon: 'tachometer' },
   { path: '/detect/detectResult', title: '漏洞检测结果', icon: 'tachometer' },
   { path: '/locate/locateResult', title: '漏洞定位结果', icon: 'list' },
+  { path: '/locate/locateConfidence', title: '漏洞置信度', icon: 'fa fa-square-full' },
   // { path: '/locate/transactionUpload', title: '漏洞定位修复', icon: 'plus' },
   { path: '/fuzzTest', title: '底层系统模糊测试', icon: 'desktop' }
   // { path: '/profile', title: '个人设置', icon: 'locateMul' },

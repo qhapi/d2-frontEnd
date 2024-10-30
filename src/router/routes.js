@@ -89,6 +89,15 @@ const frameIn = [
         component: _import('system/detect/detectResult')
       },
       {
+        path: 'locate/locateConfidence',
+        name: 'locateConfidence',
+        meta: {
+          title: '漏洞置信度分数',
+          auth: true
+        },
+        component: _import('system/locate/locateConfidence')
+      },
+      {
         path: 'fuzzTest',
         name: 'fuzzTest',
         meta: {
