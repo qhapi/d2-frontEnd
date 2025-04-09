@@ -1,171 +1,236 @@
 <template>
   <d2-container class="page">
     <div class="cover-content">
-      <img src="@/assets/image/blockchain-image.jpg" alt="区块链图片" class="blockchain-image">
+      <img src="@/assets/image/blockchain-image.jpg" alt="区块链元素图片" class="blockchain-image">
       <h1 class="cover-title">智能合约源代码漏洞速查</h1>
-      <p class="cover-description">AI智能分析，快速定位合约风险</p>
-
-      <!-- 操作入口 -->
-      <el-dropdown @command="handleCommand">
+      <p class="cover-description">基于人工智能技术，快速给出代码中的潜在漏洞并给予修复建议</p>
+      
+      <!-- 修改后的下拉菜单 -->
+      <el-dropdown @command="handleDropdownClicked">
         <el-button type="primary">
-          开始检测 <i class="el-icon-arrow-down el-icon--right"></i>
+          上传智能合约<i class="el-icon-arrow-down el-icon--right"></i>
         </el-button>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="upload">上传合约文件</el-dropdown-item>
+          <el-dropdown-item command="upload">上传文件</el-dropdown-item>
           <el-dropdown-item command="input">输入合约代码</el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
     </div>
 
-    <!-- 代码输入弹窗 -->
+    <!-- 代码输入对话框 -->
     <el-dialog
       title="输入合约代码"
-      :visible.sync="codeDialogVisible"
-      width="70%">
-      <el-input
-        type="textarea"
-        :rows="20"
-        v-model="contractCode"
-        placeholder="粘贴Solidity代码..."
-        class="code-editor">
-      </el-input>
-      <div slot="footer">
-        <el-button @click="codeDialogVisible = false">取消</el-button>
-        <el-button 
-          type="primary"
-          @click="submitCode"
-          :loading="codeSubmitting">
-          立即检测
-        </el-button>
+      :visible.sync="inputDialogVisible"
+      width="60%"
+      :before-close="handleCodeDialogClose">
+      <div style="height: 60vh">
+        <el-row>
+          <el-col :span="24">
+            <el-input
+              type="textarea"
+              :rows="20"
+              placeholder="请输入Solidity合约代码"
+              v-model="contractCode"
+              class="code-input"
+              resize="none">
+            </el-input>
+          </el-col>
+        </el-row>
+        <el-row type="flex" justify="space-between" style="margin-top: 20px;">
+          <el-button @click="handleCodeDialogClose">取消</el-button>
+          <el-button 
+            type="primary" 
+            @click="handleSubmitCode"
+            :loading="codeSubmitting"
+            :disabled="!contractCode.trim()">
+            提交检测
+          </el-button>
+        </el-row>
       </div>
     </el-dialog>
 
-    <!-- 文件上传弹窗 -->
+    <!-- 文件上传对话框 -->
     <el-dialog
-      title="上传合约文件"
-      :visible.sync="fileDialogVisible"
-      width="70%">
-      <el-upload
-        class="uploader"
-        drag
-        :auto-upload="false"
-        :on-change="handleFileChange">
-        <i class="el-icon-upload"></i>
-        <div class="el-upload__text">拖拽.sol文件到此处，或<em>点击选择</em></div>
-      </el-upload>
-      <div slot="footer">
-        <el-button @click="fileDialogVisible = false">取消</el-button>
-        <el-button 
-          type="primary"
-          @click="submitFile"
-          :loading="fileSubmitting">
-          开始检测
-        </el-button>
+      :before-close="handleClose"
+      title="上传智能合约文件"
+      :visible.sync="uploadDialogVisible"
+      width="60%">
+      <div style="height: 60vh">
+        <el-row>
+          <el-col :span="12">
+            <el-upload
+              ref="uploadSol"
+              class="upload-demo"
+              drag
+              action="http://localhost:5000/uploadFile"
+              :before-upload="beforeSolUpload"
+              :data="uploadData"
+              :auto-upload="false"
+              :limit="1"
+              :on-exceed="handleExceed"
+              :file-list="fileList">
+              <i class="el-icon-upload"></i>
+              <div class="el-upload__text">将.sol文件拖到此处，或<em>点击上传</em></div>
+              <div class="el-upload__tip" slot="tip">仅支持单个.sol文件，大小不超过2MB</div>
+            </el-upload>
+          </el-col>
+          <el-col :span="12">
+            <el-row type="flex" justify="center" style="margin-top: 50px;">
+              <el-button 
+                type="primary" 
+                @click="handleUploadFile"
+                :loading="fileSubmitting">
+                {{ fileList.length ? '重新上传' : '选择文件' }}
+              </el-button>
+              <el-button 
+                type="success" 
+                @click="handleDetectFile"
+                :loading="detectingFile">
+                开始检测
+              </el-button>
+            </el-row>
+            <el-row style="margin-top: 30px;">
+              <el-alert
+                title="文件要求"
+                type="info"
+                :closable="false"
+                description="1. 单个Solidity合约文件
+2. 版本号需在0.4.0以上
+3. 不包含中文路径"
+                show-icon>
+              </el-alert>
+            </el-row>
+          </el-col>
+        </el-row>
       </div>
     </el-dialog>
   </d2-container>
 </template>
 
 <script>
-import axios from 'axios'
-
 export default {
-  name: 'ContractCheck',
+  name: 'ContractUpload',
   data() {
     return {
       // 代码输入相关
-      codeDialogVisible: false,
+      inputDialogVisible: false,
       contractCode: '',
       codeSubmitting: false,
-
+      
       // 文件上传相关
-      fileDialogVisible: false,
-      uploadFile: null,
-      fileSubmitting: false
+      uploadDialogVisible: false,
+      fileSubmitting: false,
+      detectingFile: false,
+      uploadData: {
+        userName: '',
+        uploadType: 'sol'
+      },
+      fileList: [],
+      
+      // 其他原有数据
+      currentWorkDirectory: 'SushiMaker',
+      mainPath: 'contracts'
     }
   },
+  mounted() {
+    this.uploadData.userName = this.$store.state.d2admin.user.info.name
+  },
   methods: {
-    // 入口选择处理
-    handleCommand(command) {
+    // 下拉菜单处理
+    handleDropdownClicked(command) {
       if (command === 'upload') {
-        this.fileDialogVisible = true
-      } else {
-        this.codeDialogVisible = true
+        this.uploadDialogVisible = true
+      } else if (command === 'input') {
+        this.inputDialogVisible = true
       }
     },
 
-    // 文件选择处理
-    handleFileChange(file) {
-      this.uploadFile = file.raw
-    },
-
-    // 提交代码检测
-    async submitCode() {
-      if (!this.contractCode.trim()) return
-      
+    // 代码提交处理
+    async handleSubmitCode() {
       this.codeSubmitting = true
       try {
-        const response = await axios.post('http://localhost:5000/detect', {
-          code: this.contractCode
-        })
+        const lines = Math.floor(Math.random() * 21) + 40
         
         this.$router.push({
-          name: 'result',
+          name: 'detect-progress',
           params: {
-            result: response.data.result,
-            confidence: response.data.confidence
+            lines,
+            detectType: 'code' // 标记检测类型
           }
         })
+    
       } catch (error) {
-        // 通信失败时生成模拟数据
-        this.$router.push({
-          name: 'result',
-          params: {
-            result: Math.random() > 0.5 ? '有风险' : '无风险',
-            confidence: Math.random().toFixed(2)
-          }
-        })
+        this.$message.error(`代码提交失败: ${error.message}`)
       } finally {
         this.codeSubmitting = false
-        this.codeDialogVisible = false
       }
     },
 
-    // 提交文件检测
-    async submitFile() {
-      if (!this.uploadFile) return
-      
-      this.fileSubmitting = true
-      try {
-        const formData = new FormData()
-        formData.append('file', this.uploadFile)
-
-        const response = await axios.post(
-          'http://localhost:5000/upload', 
-          formData,
-          { headers: { 'Content-Type': 'multipart/form-data' } }
-        )
-
-        this.$router.push({
-          name: 'result',
-          params: {
-            result: response.data.result,
-            confidence: response.data.confidence
-          }
-        })
-      } catch (error) {
-        // 通信失败时生成模拟数据
-        this.$router.push({
-          name: 'result',
-          params: {
-            result: Math.random() > 0.5 ? '有风险' : '无风险',
-            confidence: Math.random().toFixed(2)
-          }
-        })
-      } finally {
-        this.fileSubmitting = false
-        this.fileDialogVisible = false
+    // 文件上传处理
+    handleUploadFile() {
+      if (this.fileList.length) {
+        this.fileList = []
+        return
       }
+      this.$refs.uploadSol.$el.querySelector('.el-upload__input').click()
+    },
+
+    async handleDetectFile() {
+      this.detectingFile = true
+      try {
+        if (this.fileList.length) {
+          await this.$refs.uploadSol.submit()
+        }
+        
+        const lines = Math.floor(Math.random() * 21) + 40 
+        
+        this.$router.push({
+          name: 'detect-progress',
+          params: {
+            lines,
+            detectType: 'file' // 标记检测类型
+          }
+        })
+    
+      } catch (error) {
+        this.$message.error(error.message)
+      } finally {
+        this.detectingFile = false
+      }
+    },
+
+    // 文件验证
+    beforeSolUpload(file) {
+      const isSol = file.name.endsWith('.sol')
+      const isSizeValid = file.size / 1024 / 1024 < 2
+
+      if (!isSol) {
+        this.$message.error('仅支持.sol文件')
+        return false
+      }
+
+      if (!isSizeValid) {
+        this.$message.error('文件大小不能超过2MB')
+        return false
+      }
+
+      this.fileList = [file]
+      return true
+    },
+
+    // 通用方法
+    handleExceed() {
+      this.$message.warning('每次只能上传一个文件')
+    },
+
+    handleCodeDialogClose() {
+      this.inputDialogVisible = false
+      this.contractCode = ''
+    },
+
+    handleClose() {
+      this.uploadDialogVisible = false
+      this.fileList = []
     }
   }
 }
@@ -173,59 +238,52 @@ export default {
 
 <style lang="scss" scoped>
 .page {
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background-image: url('../../../assets/image/background.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
 
   .cover-content {
     text-align: center;
     padding: 40px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    margin: 20px auto;
     max-width: 800px;
-    margin: 0 auto;
 
     .blockchain-image {
-      width: 300px;
-      margin-bottom: 30px;
+      max-width: 60%;
+      height: auto;
+      margin: 20px 0;
     }
 
     .cover-title {
       font-size: 2.5rem;
       color: #2c3e50;
-      margin-bottom: 15px;
+      margin-bottom: 1rem;
     }
 
     .cover-description {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       color: #7f8c8d;
-      margin-bottom: 30px;
+      margin-bottom: 2rem;
     }
   }
 }
 
-.code-editor {
-  font-family: 'Fira Code', monospace;
+.code-input {
+  font-family: 'Fira Code', 'Courier New', monospace;
   font-size: 14px;
-  
-  ::v-deep .el-textarea__inner {
-    font-family: inherit;
-    line-height: 1.6;
-  }
+  border-radius: 4px;
 }
 
-.uploader {
-  ::v-deep .el-upload-dragger {
-    padding: 50px;
-    background: #f8f9fa;
-    border: 2px dashed #dcdfe6;
-    transition: all 0.3s;
-
-    &:hover {
-      border-color: #409EFF;
-      background: rgba(64, 158, 255, 0.05);
+.upload-demo {
+  ::v-deep .el-upload {
+    width: 100%;
+    
+    .el-upload-dragger {
+      width: 100%;
+      padding: 20px;
     }
   }
 }

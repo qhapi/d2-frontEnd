@@ -14,12 +14,24 @@ const frameIn = [
     children: [
       // 首页
       {
+        path: '/fullcheck',
+        name: 'fullcheck',
+        meta: {
+          auth: true
+        },
+        component: () => import('@/pages/fullcheck/index'),
+        meta: {
+          title: '全流程漏洞检查'
+        }
+      },
+      {
         path: 'index',
         name: 'index',
         meta: {
           auth: true
         },
         component: _import('system/index')
+        // component: () => import('@/pages/fullcheck/index')
       },
       // 新建
       {
@@ -197,7 +209,33 @@ const frameIn = [
         name: 'redirect',
         hidden: true,
         component: _import('system/function/redirect')
+      },
+      
+      {
+        path: '/repair-detail',
+        name: 'repair-detail',
+        component: () => import('@/pages/fullcheck/repair-detail'),
+        meta: {
+          title: '漏洞精准定位'
+        }
+      },
+      {
+        path: '/lowlevel-check',
+        name: 'lowlevel-check',
+        component: () => import('@/pages/fullcheck/lowlevel-check'),
+        meta: {
+          title: '漏洞补丁修复'
+        }
+      },
+      {
+        path: '/new',
+        name: 'new',
+        component: () => import('@/pages/fullcheck/new'),
+        meta: {
+          title: '底层漏洞检测'
+        }
       }
+      
     ]
   }
 ]
