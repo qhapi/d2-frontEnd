@@ -109,11 +109,12 @@ contract Example {
           <div v-if="status === 'completed'" class="final-result">
             <h3 class="result-title"><i class="el-icon-s-opportunity"></i> 检测结果</h3>
             <el-alert 
-              :title="`发现 ${vulnerabilityCount} 处高危漏洞`"
-              type="error"
+              :title="vulnerabilityCount > 0 ? `发现 ${vulnerabilityCount} 处高危漏洞` : '未检测到高危漏洞'"
+              :type="vulnerabilityCount > 0 ? 'error' : 'success'"
               :closable="false"
               class="result-alert">
-              <div class="result-detail">
+              
+              <div v-if="vulnerabilityCount > 0" class="result-detail">
                 <div class="vul-item">
                   <span class="vul-type"><i class="el-icon-warning"></i> {{ vulnerabilityType }}</span>
                   <el-tag effect="dark" type="danger">严重</el-tag>
@@ -122,15 +123,19 @@ contract Example {
                   <el-collapse-item title="漏洞详情" name="1">
                     <div class="detail-item">
                       <label>CVE 编号:</label> 
-                      <span class="cve-id">CVE-2023-12345</span>
+                      <span class="cve-id">CVE-173</span>
                     </div>
                     <div class="detail-item">
                       <label>漏洞描述:</label>
-                      <p>在算术运算中未使用安全校验，攻击者可通过超大数值输入导致整数溢出...</p>
+                      <p>在算术运算中未使用安全校验，攻击者可通过超大数值输入导致整数溢出</p>
                     </div>
                   </el-collapse-item>
                 </el-collapse>
               </div>
+              <div v-else class="safe-prompt">
+                  <i class="el-icon-success"></i>
+                  <p>当前合约代码通过基础安全检测</p>
+                </div>
             </el-alert>
 
             <div class="risk-assessment">
@@ -159,7 +164,7 @@ contract Example {
                 type="warning"
                 @click="goToAdvanced"
                 class="advanced-button">
-                <i class="el-icon-position"></i> 进阶漏洞定位
+                <i class="el-icon-position"></i> 漏洞定位与修复
               </el-button>
             </div>
           </div>
@@ -214,12 +219,29 @@ function transfer(address to, uint value) public {
             <i class="el-icon-document-copy"></i> 复制修复代码
           </el-button>
         </div>
-      </div>
+        <div class="rating-section">
+          <h4><i class="el-icon-thumb"></i> 评价修复建议</h4>
+          <div class="rating-icons">
+            <el-tooltip content="点赞">
+              <i class="el-icon-caret-top thumbs-up" @click="handleLike"></i>
+            </el-tooltip>
+            <el-tooltip content="差评">
+              <i class="el-icon-caret-bottom thumbs-down" @click="handleDislike"></i>
+            </el-tooltip>
+          </div>
+          <div class="rating-stats">
+            <span>点赞: {{ likes }}</span>
+            <span>差评: {{ dislikes }}</span>
+          </div>
+          </div>
+        </div>
     </el-dialog>
   </d2-container>
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   data() {
     return {
@@ -284,32 +306,44 @@ export default {
 
     startDetection() {
       this.status = 'detecting'
-      this.progress = 0
-      this.scannedLines = 0
-      this.totalLines = this.codeLines
-      this.startTime = new Date()
+      this.detecting = true
+      this.startTime = new Date() // 添加检测开始时间
       
-      // 模拟检测过程
-      const hintInterval = setInterval(() => {
-        this.currentHint = this.hints[Math.floor(Math.random() * this.hints.length)]
-      }, 2500)
-
-      const timer = setInterval(() => {
-        const step = Math.random() * 8 + 4
-        this.progress = parseFloat(Math.min(this.progress + step, 100).toFixed(0))
-        
-        this.scannedLines = Math.floor(this.totalLines * this.progress / 100)
-        this.scanSpeed = Math.floor(Math.random() * 8000 + 12000)
-        
-        if (this.progress >= 100) {
-          clearInterval(timer)
-          clearInterval(hintInterval)
+      axios.post('http://localhost:5000/api/detect', {
+        code: this.contractCode
+      })
+      .then(response => {
+        if (response.data.status === 'success') {
+          // 根据实际结果更新状态
           this.status = 'completed'
+          this.vulnerabilityCount = response.data.vulnerabilities.length
+          
+          // 只有当存在漏洞时才更新类型
+          if (this.vulnerabilityCount > 0) {
+            this.vulnerabilityType = response.data.vulnerabilities[0].type
+            this.riskLevel = this.calculateRiskLevel(response.data.confidence)
+          } else {
+            this.vulnerabilityType = '无漏洞'
+          }
+          
+          // 更新检测耗时
           this.calculateDetectionTime()
         }
-      }, 300)
+      })
+      .catch(error => {
+        this.$message.error('检测失败: ' + error.response?.data?.message || error.message)
+        this.status = 'init'
+      })
+      .finally(() => {
+        this.detecting = false
+      })
     },
-
+    
+    // 风险评分计算方法
+    calculateRiskLevel(confidence) {
+      return Math.min(5, Math.ceil(confidence * 5))
+    },
+    
     calculateDetectionTime() {
       const end = new Date()
       const diff = (end - this.startTime) / 1000
@@ -581,7 +615,52 @@ function transfer(address to, uint value) public {
     margin-left: 8px;
   }
 }
+.rating-section {
+  margin-top: 25px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 6px;
+}
 
+.safe-prompt {
+  text-align: center;
+  padding: 20px;
+  i {
+    font-size: 48px;
+    color: #67C23A;
+    margin-bottom: 15px;
+  }
+  p {
+    color: #606266;
+    font-size: 16px;
+    margin: 0;
+  }
+}
+.rating-icons {
+  display: flex;
+  gap: 20px;
+  margin: 15px 0;
+}
+
+.thumbs-up, .thumbs-down {
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.thumbs-up:hover {
+  color: #4CAF50;
+}
+
+.thumbs-down:hover {
+  color: #FF5252;
+}
+
+.rating-stats {
+  display: flex;
+  gap: 20px;
+  color: #606266;
+  font-size: 14px;
+}
 .progress-title {
   color: #409EFF;
   margin-bottom: 20px;
