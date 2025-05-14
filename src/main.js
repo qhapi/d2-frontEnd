@@ -27,7 +27,6 @@ Vue.use(VueHighlightJS, {
 Vue.component(VeRing.name, VeRing)
 Vue.component(VeHistogram.name, VeHistogram)
 
-
 // 同时设置全局 $axios 对象，这样就不用多次引用 axios 了
 
 Vue.prototype.$axios = axios

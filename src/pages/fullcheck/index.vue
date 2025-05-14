@@ -2,7 +2,7 @@
   <d2-container>
     <div class="header-section">
       <h2><i class="el-icon-warning-outline"></i> 智能合约安全检测</h2>
-      <el-alert 
+      <el-alert
         title="支持 Solidity 0.4.24 及以上版本"
         type="info"
         :closable="false"
@@ -35,7 +35,7 @@
           </div>
 
           <el-divider><i class="el-icon-edit"></i> 或手动输入代码</el-divider>
-          
+
           <div class="code-editor">
             <el-input
               type="textarea"
@@ -56,8 +56,8 @@ contract Example {
             </transition>
           </div>
 
-          <el-button 
-            type="primary" 
+          <el-button
+            type="primary"
             @click="startDetection"
             :disabled="!hasContent || detecting"
             class="start-button">
@@ -66,115 +66,57 @@ contract Example {
         </el-card>
       </el-col>
 
-      <!-- 右侧结果区域 -->
-      <el-col :span="12" class="result-section">
-        <el-card shadow="hover" class="result-card">
-          <!-- 初始状态 -->
-          <div v-if="status === 'init'" class="status-prompt">
-            <i class="el-icon-document-checked"></i>
-            <p>请上传或输入合约代码开始安全检测</p>
-          </div>
-
-          <!-- 检测中 -->
-          <div v-if="status === 'detecting'">
-            <h3 class="progress-title"><i class="el-icon-loading"></i> 检测进度</h3>
-            <div class="progress-container">
-              <el-progress 
-                :percentage="progress" 
-                :stroke-width="18"
-                :text-inside="true"
-                striped
-                :color="progressColor"/>
-              
-              <div class="progress-details">
-                <div class="stats-grid">
-                  <div class="stats-item">
-                    <span class="label"><i class="el-icon-timer"></i> 已检测行数</span>
-                    <span class="value">{{ scannedLines }} / {{ totalLines }}</span>
+      <!-- 右侧参数输入区域 -->
+      <el-col :span="12" class="param-section">
+        <el-card shadow="hover">
+          <el-form :model="form" label-width="110px" class="param-form">
+            <el-form-item label="项目名称">
+              <el-input v-model="form.projectName" placeholder="请输入项目名称" />
+            </el-form-item>
+            <el-form-item label="合约地址">
+              <el-input v-model="form.contractAddress" placeholder="请输入合约地址（可选）" />
+            </el-form-item>
+            <el-form-item label="交易地址">
+              <el-input v-model="form.txAddress" placeholder="请输入交易地址（可选）" />
+            </el-form-item>
+            <el-form-item label="系统版本">
+              <el-input v-model="form.systemVersion" placeholder="如 1.0.0" />
+            </el-form-item>
+            <el-row :gutter="24">
+              <el-col :span="12">
+                <el-form-item label="底层系统类型">
+                  <el-select v-model="form.systemType" placeholder="请选择系统类型">
+                    <el-option label="以太坊" value="Ethereum" />
+                    <el-option label="Fabric" value="Fabric" />
+                    <el-option label="其他" value="Other" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="底层系统文件">
+                  <el-upload
+                    action="#"
+                    :before-upload="handleSystemUpload"
+                    :show-file-list="false"
+                    drag>
+                    <i class="el-icon-upload"></i>
+                    <div class="el-upload__text">拖拽或点击上传底层系统文件</div>
+                  </el-upload>
+                  <div v-if="form.systemFile" class="file-preview">
+                    <el-tag type="info">
+                      <i class="el-icon-document"></i>
+                      {{ form.systemFile.name }}
+                    </el-tag>
                   </div>
-                  <div class="stats-item">
-                    <span class="label"><i class="el-icon-cpu"></i> 检测速度</span>
-                    <span class="value">{{ scanSpeed }} 行/秒</span>
-                  </div>
-                </div>
-                
-                <div class="dynamic-hint">
-                  <i class="el-icon-chat-dot-round"></i> {{ currentHint }}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 检测完成 -->
-          <div v-if="status === 'completed'" class="final-result">
-            <h3 class="result-title"><i class="el-icon-s-opportunity"></i> 检测结果</h3>
-            <el-alert 
-              :title="vulnerabilityCount > 0 ? `发现 ${vulnerabilityCount} 处高危漏洞` : '未检测到高危漏洞'"
-              :type="vulnerabilityCount > 0 ? 'error' : 'success'"
-              :closable="false"
-              class="result-alert">
-              
-              <div v-if="vulnerabilityCount > 0" class="result-detail">
-                <div class="vul-item">
-                  <span class="vul-type"><i class="el-icon-warning"></i> {{ vulnerabilityType }}</span>
-                  <el-tag effect="dark" type="danger">严重</el-tag>
-                </div>
-                <el-collapse v-model="activeCollapse" class="vul-details">
-                  <el-collapse-item title="漏洞详情" name="1">
-                    <div class="detail-item">
-                      <label>CVE 编号:</label> 
-                      <span class="cve-id">CVE-173</span>
-                    </div>
-                    <div class="detail-item">
-                      <label>漏洞描述:</label>
-                      <p>在算术运算中未使用安全校验，攻击者可通过超大数值输入导致整数溢出</p>
-                    </div>
-                  </el-collapse-item>
-                </el-collapse>
-              </div>
-              <div v-else class="safe-prompt">
-                  <i class="el-icon-success"></i>
-                  <p>当前合约代码通过基础安全检测</p>
-                </div>
-            </el-alert>
-
-            <div class="risk-assessment">
-              <div class="risk-score">
-                <span class="label">风险评分:</span>
-                <el-rate
-                  v-model="riskLevel"
-                  disabled
-                  :max="5"
-                  :colors="['#99A9BF', '#F7BA2A', '#FF9900']"/>
-                <span class="score">8.7/10</span>
-              </div>
-              <div class="time-cost">
-                <i class="el-icon-clock"></i> 检测耗时: {{ detectionTime }}
-              </div>
-            </div>
-
-            <div class="action-buttons">
-              <el-button 
-                type="primary" 
-                @click="showAISuggestion"
-                class="ai-button">
-                <i class="el-icon-magic-stick"></i> AI快速修复建议
-              </el-button>
-              <el-button 
-                type="warning"
-                @click="goToAdvanced"
-                class="advanced-button">
-                <i class="el-icon-position"></i> 漏洞定位与修复
-              </el-button>
-            </div>
-          </div>
+                </el-form-item>
+              </el-col>
+            </el-row>
+          </el-form>
         </el-card>
       </el-col>
     </el-row>
 
     <!-- AI建议对话框 -->
-    <el-dialog 
-      :title="`${vulnerabilityType} 修复建议`" 
+    <el-dialog
+      :title="`${vulnerabilityType} 修复建议`"
       :visible.sync="showAIDialog"
       width="800px"
       top="5vh">
@@ -184,7 +126,7 @@ contract Example {
           type="info"
           show-icon
           class="suggestion-alert"/>
-        
+
         <div class="code-compare">
           <h4><i class="el-icon-document-remove"></i> 漏洞代码</h4>
           <pre class="vulnerable-code">function transfer(address to, uint value) public {
@@ -212,38 +154,23 @@ function transfer(address to, uint value) public {
         </div>
 
         <div class="dialog-actions">
-          <el-button 
+          <el-button
             type="success"
             @click="copyCode"
             class="copy-button">
             <i class="el-icon-document-copy"></i> 复制修复代码
           </el-button>
         </div>
-        <div class="rating-section">
-          <h4><i class="el-icon-thumb"></i> 评价修复建议</h4>
-          <div class="rating-icons">
-            <el-tooltip content="点赞">
-              <i class="el-icon-caret-top thumbs-up" @click="handleLike"></i>
-            </el-tooltip>
-            <el-tooltip content="差评">
-              <i class="el-icon-caret-bottom thumbs-down" @click="handleDislike"></i>
-            </el-tooltip>
-          </div>
-          <div class="rating-stats">
-            <span>点赞: {{ likes }}</span>
-            <span>差评: {{ dislikes }}</span>
-          </div>
-          </div>
-        </div>
+        <!-- 删除冗余的评价区域 -->
+      </div>
     </el-dialog>
   </d2-container>
 </template>
 
 <script>
-import axios from 'axios'
 
 export default {
-  data() {
+  data () {
     return {
       contractCode: '',
       uploadedFile: null,
@@ -269,11 +196,20 @@ export default {
         '检测重入漏洞模式...',
         '验证权限控制逻辑...',
         '扫描算术运算风险...'
-      ]
+      ],
+      form: {
+        projectName: '',
+        contractAddress: '',
+        txAddress: '',
+        systemType: '',
+        systemVersion: '',
+        systemFile: null,
+        contractFile: null
+      }
     }
   },
   computed: {
-    progressColor() {
+    progressColor () {
       return [
         { color: '#409EFF', percentage: 30 },
         { color: '#67C23A', percentage: 70 },
@@ -282,19 +218,19 @@ export default {
     }
   },
   watch: {
-    contractCode(newVal) {
+    contractCode (newVal) {
       this.hasContent = newVal.length > 0
       this.codeLines = newVal.split('\n').length
       this.codeLength = newVal.replace(/\s/g, '').length
     }
   },
   methods: {
-    handleUpload(file) {
+    handleUpload (file) {
       if (file.size > 10 * 1024 * 1024) {
         this.$message.error('文件大小超过10MB限制')
         return false
       }
-      
+
       this.uploadedFile = file
       const reader = new FileReader()
       reader.onload = (e) => {
@@ -304,47 +240,33 @@ export default {
       return false
     },
 
-    startDetection() {
-      this.status = 'detecting'
-      this.detecting = true
-      this.startTime = new Date() // 添加检测开始时间
-      
-      axios.post('http://localhost:5000/api/detect', {
-        code: this.contractCode
-      })
-      .then(response => {
-        if (response.data.status === 'success') {
-          // 根据实际结果更新状态
-          this.status = 'completed'
-          this.vulnerabilityCount = response.data.vulnerabilities.length
-          
-          // 只有当存在漏洞时才更新类型
-          if (this.vulnerabilityCount > 0) {
-            this.vulnerabilityType = response.data.vulnerabilities[0].type
-            this.riskLevel = this.calculateRiskLevel(response.data.confidence)
-          } else {
-            this.vulnerabilityType = '无漏洞'
-          }
-          
-          // 更新检测耗时
-          this.calculateDetectionTime()
+    handleSystemUpload (file) {
+      this.form.systemFile = file
+      return false
+    },
+
+    handleContractUpload (file) {
+      this.form.contractFile = file
+      return false
+    },
+
+    startDetection () {
+      // 跳转到进度展示页，由progress页负责检测和后续跳转
+      this.$router.push({
+        path: '/detect/progress',
+        query: {
+          code: this.contractCode,
+          lines: this.codeLines
         }
       })
-      .catch(error => {
-        this.$message.error('检测失败: ' + error.response?.data?.message || error.message)
-        this.status = 'init'
-      })
-      .finally(() => {
-        this.detecting = false
-      })
     },
-    
+
     // 风险评分计算方法
-    calculateRiskLevel(confidence) {
+    calculateRiskLevel (confidence) {
       return Math.min(5, Math.ceil(confidence * 5))
     },
-    
-    calculateDetectionTime() {
+
+    calculateDetectionTime () {
       const end = new Date()
       const diff = (end - this.startTime) / 1000
       const minutes = Math.floor(diff / 60)
@@ -352,11 +274,11 @@ export default {
       this.detectionTime = `${minutes}分${seconds.toString().padStart(2, '0')}秒`
     },
 
-    showAISuggestion() {
+    showAISuggestion () {
       this.showAIDialog = true
     },
 
-    copyCode() {
+    copyCode () {
       const code = `using SafeMath for uint;
 
 function transfer(address to, uint value) public {
@@ -367,7 +289,7 @@ function transfer(address to, uint value) public {
       this.$message.success('修复代码已复制到剪贴板')
     },
 
-    formatFileSize(bytes) {
+    formatFileSize (bytes) {
       if (bytes === 0) return '0 B'
       const k = 1024
       const sizes = ['B', 'KB', 'MB']
@@ -375,7 +297,7 @@ function transfer(address to, uint value) public {
       return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i])
     },
 
-    goToAdvanced() {
+    goToAdvanced () {
       this.$router.push('/repair-detail')
     }
   }
@@ -397,8 +319,12 @@ function transfer(address to, uint value) public {
 
 .main-content {
   margin-top: 20px;
+  align-items: stretch;
   .el-col {
     transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
 }
 
@@ -415,11 +341,11 @@ function transfer(address to, uint value) public {
       }
     }
   }
-  
+
   .code-editor {
     position: relative;
     margin-bottom: 15px;
-    
+
     .code-stats {
       margin-top: 10px;
       text-align: right;
@@ -429,19 +355,65 @@ function transfer(address to, uint value) public {
       }
     }
   }
-  
+
   .start-button {
     width: 100%;
     padding: 12px 20px;
     font-size: 16px;
     letter-spacing: 1px;
   }
+
+  .el-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+}
+
+.param-section {
+  // 让右侧卡片和表单宽度自适应父容器，避免被边界截断
+  .el-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    // 让卡片内容撑满
+    box-sizing: border-box;
+  }
+  .param-form {
+    width: 100%;
+    max-width: none;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 32px 24px 12px 24px;
+    box-shadow: 0 2px 8px #e6e6e6;
+    min-height: 100%;
+    box-sizing: border-box;
+  }
+  .el-form-item {
+    // 防止输入框溢出被截断
+    .el-input,
+    .el-select,
+    .el-upload {
+      width: 100%;
+      box-sizing: border-box;
+    }
+  }
+  .file-preview {
+    margin-top: 10px;
+    .el-tag {
+      max-width: 80%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 }
 
 .result-section {
   .result-card {
     min-height: 680px;
-    
+
     .status-prompt {
       text-align: center;
       padding: 60px 0;
@@ -468,13 +440,13 @@ function transfer(address to, uint value) public {
 
     .progress-container {
       padding: 0 20px;
-      
+
       .stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 15px;
         margin: 25px 0;
-        
+
         .stats-item {
           background: #f8f9fa;
           border-radius: 4px;
@@ -494,7 +466,7 @@ function transfer(address to, uint value) public {
           }
         }
       }
-      
+
       .dynamic-hint {
         margin-top: 25px;
         padding: 12px;
@@ -515,7 +487,7 @@ function transfer(address to, uint value) public {
         margin-bottom: 20px;
         text-align: center;
       }
-      
+
       .vul-item {
         display: flex;
         align-items: center;
@@ -529,7 +501,7 @@ function transfer(address to, uint value) public {
           font-weight: 500;
         }
       }
-      
+
       .risk-assessment {
         margin-top: 25px;
         padding: 20px;
@@ -574,7 +546,7 @@ function transfer(address to, uint value) public {
       }
     }
   }
-  
+
   .dialog-actions {
     margin-top: 25px;
     text-align: center;
@@ -591,7 +563,7 @@ function transfer(address to, uint value) public {
   text-align: center;
   padding: 40px 0;
   color: #909399;
-  
+
   i {
     font-size: 48px;
     margin-bottom: 20px;
@@ -615,52 +587,6 @@ function transfer(address to, uint value) public {
     margin-left: 8px;
   }
 }
-.rating-section {
-  margin-top: 25px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 6px;
-}
-
-.safe-prompt {
-  text-align: center;
-  padding: 20px;
-  i {
-    font-size: 48px;
-    color: #67C23A;
-    margin-bottom: 15px;
-  }
-  p {
-    color: #606266;
-    font-size: 16px;
-    margin: 0;
-  }
-}
-.rating-icons {
-  display: flex;
-  gap: 20px;
-  margin: 15px 0;
-}
-
-.thumbs-up, .thumbs-down {
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.thumbs-up:hover {
-  color: #4CAF50;
-}
-
-.thumbs-down:hover {
-  color: #FF5252;
-}
-
-.rating-stats {
-  display: flex;
-  gap: 20px;
-  color: #606266;
-  font-size: 14px;
-}
 .progress-title {
   color: #409EFF;
   margin-bottom: 20px;
@@ -669,16 +595,16 @@ function transfer(address to, uint value) public {
 
 .progress-details {
   margin-top: 20px;
-  
+
   .stats-item {
     margin: 12px 0;
     display: flex;
     justify-content: space-between;
-    
+
     .label {
       color: #606266;
     }
-    
+
     .value {
       color: #303133;
       font-weight: 500;

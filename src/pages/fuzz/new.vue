@@ -4,7 +4,7 @@
     <div v-if="currentStep === 0" class="toolchain-selection">
       <h2 class="selection-title">🔧 选择区块链测试工具链</h2>
       <div class="toolchain-grid">
-        <el-card 
+        <el-card
           v-for="tool in toolchains"
           :key="tool.name"
           shadow="hover"
@@ -32,8 +32,8 @@
         <el-tag type="warning">测试引擎版本 {{ selectedTool.version }}</el-tag>
       </div>
 
-      <el-progress 
-        type="dashboard" 
+      <el-progress
+        type="dashboard"
         :percentage="progress"
         :color="progressColors"
         :width="200">
@@ -45,9 +45,9 @@
 
       <el-row :gutter="20" class="live-stats">
         <el-col :span="6">
-          <stat-card 
-            title="测试用例" 
-            :value="testCases" 
+          <stat-card
+            title="测试用例"
+            :value="testCases"
             icon="el-icon-document"
             color="#409EFF"/>
         </el-col>
@@ -79,7 +79,7 @@
       <el-card class="live-logs">
         <h3>📜 实时执行日志 <el-tag size="mini">最后{{ logs.length }}条</el-tag></h3>
         <div class="log-container">
-          <div 
+          <div
             v-for="log in visibleLogs"
             :key="log.id"
             class="log-item"
@@ -95,7 +95,7 @@
     <!-- 测试完成分析 -->
     <div v-if="currentStep === 2" class="analysis-result">
       <h2>📊 {{ selectedTool.name }} 测试结果分析</h2>
-      
+
       <div class="detailed-analysis">
         <el-alert type="success" :closable="false">
           已完成 {{ testCases }} 个测试用例，发现 {{ exceptions }} 个异常事件，代码覆盖率达到 {{ coverage }}%
@@ -142,8 +142,8 @@
                 <div class="stat-item">
                   <label>CPU利用率</label>
                   <div class="stat-value">{{ cpuUsage }}%</div>
-                  <el-progress 
-                    :percentage="cpuUsage" 
+                  <el-progress
+                    :percentage="cpuUsage"
                     :color="cpuUsage > 80 ? '#F56C6C' : '#67C23A'"
                     :show-text="false"
                     stroke-width="6"/>
@@ -177,8 +177,8 @@
         </el-card>
       </div>
 
-      <el-button 
-        type="primary" 
+      <el-button
+        type="primary"
         @click="downloadReport"
         class="download-btn">
         <i class="el-icon-document"></i> 生成完整报告
@@ -189,11 +189,11 @@
 
 <script>
 import echarts from 'echarts'
-import StatCard from '@/pages/fullcheck/StatCard.vue'
+import StatCard from '@/pages/fuzz/StatCard.vue'
 
 export default {
   components: { StatCard },
-  data() {
+  data () {
     return {
       currentStep: 0,
       toolchains: [
@@ -278,39 +278,39 @@ export default {
     }
   },
   computed: {
-    logsPerSec() {
+    logsPerSec () {
       return this.logs.filter(l => Date.now() - l.timestamp < 1000).length
     },
-    visibleLogs() {
+    visibleLogs () {
       return this.logs.slice(-20).reverse()
     }
   },
   methods: {
-    selectToolchain(tool) {
+    selectToolchain (tool) {
       this.selectedTool = tool
       this.currentStep = 1
       this.startFuzzing()
     },
 
-    startFuzzing() {
+    startFuzzing () {
       const start = Date.now()
       const duration = 20000 // 20秒
-      
+
       const timer = setInterval(() => {
         const elapsed = Date.now() - start
         this.elapsedTime = new Date(elapsed).toISOString().substr(14, 5)
         // this.progress = Math.min(100, (elapsed / duration) * 100)
         this.progress = parseFloat(Math.min(100, (elapsed / duration) * 100).toFixed(0))
-        
+
         // 生成测试数据
         this.testCases += Math.floor(Math.random() * 50)
         this.coverage = Math.min(100, this.coverage + Math.random() * 0.5)
         this.execSpeed = 500 + Math.random() * 1500
-        
+
         // 生成日志
         if (Math.random() > 0.8) {
           this.exceptions++
-          this.addLog('error', `检测到异常操作码 0x${Math.random().toString(16).substr(2,4)}`)
+          this.addLog('error', `检测到异常操作码 0x${Math.random().toString(16).substr(2, 4)}`)
         } else {
           this.addLog('info', `成功执行测试用例 #${this.testCases}`)
         }
@@ -323,7 +323,7 @@ export default {
       }, 200)
     },
 
-    addLog(type, message) {
+    addLog (type, message) {
       this.logs.push({
         id: Date.now(),
         type,
@@ -333,7 +333,7 @@ export default {
       })
     },
 
-    initChart() {
+    initChart () {
       const chart = echarts.init(this.$refs.chart)
       const option = {
         tooltip: {
@@ -354,11 +354,11 @@ export default {
       chart.setOption(option)
     },
 
-    downloadReport() {
+    downloadReport () {
       this.$message.success('测试报告生成完成')
     }
   },
-  beforeDestroy() {
+  beforeDestroy () {
     if (this.chart) {
       this.chart.dispose()
     }
@@ -373,7 +373,7 @@ export default {
   .toolchain-selection {
     max-width: 1000px;
     margin: 0 auto;
-    
+
     .selection-title {
       text-align: center;
       margin: 40px 0;
@@ -390,7 +390,7 @@ export default {
         cursor: pointer;
         transition: all 0.3s;
         border-radius: 12px;
-        
+
         &:hover {
           transform: translateY(-5px);
           box-shadow: 0 8px 24px rgba(0,0,0,0.1);
@@ -400,7 +400,7 @@ export default {
           display: flex;
           align-items: center;
           margin-bottom: 15px;
-          
+
           i {
             font-size: 36px;
             margin-right: 15px;
@@ -482,7 +482,7 @@ export default {
     .live-logs {
       margin-top: 30px;
       border-radius: 12px;
-      
+
       h3 {
         font-size: 18px;
         color: #303133;

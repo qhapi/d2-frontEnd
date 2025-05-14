@@ -11,7 +11,6 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.3.1",
     "@highlightjs/vue-plugin": "^1.0.2",
     "@vue/component-compiler-utils": "^3.3.0",
     "adm-zip": "^0.5.14",
