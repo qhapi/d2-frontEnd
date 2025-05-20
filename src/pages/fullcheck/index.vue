@@ -29,9 +29,19 @@
             <div v-if="uploadedFile" class="file-preview">
               <el-tag type="success">
                 <i class="el-icon-document"></i>
-                {{ uploadedFile.name }} ({{ formatFileSize(uploadedFile.size) }})
+                {{ uploadedFile.name }}
               </el-tag>
             </div>
+
+            <!-- 上传漏洞报告（可选） -->
+            <el-upload
+              action="#"
+              :before-upload="handleReportUpload"
+              :show-file-list="false"
+              accept=".json">
+              <el-button size="mini" type="info" icon="el-icon-upload">上传漏洞报告（可选）</el-button>
+              <span v-if="uploadedReport" style="margin-left:8px;">{{ uploadedReport.name }}</span>
+            </el-upload>
           </div>
 
           <el-divider><i class="el-icon-edit"></i> 或手动输入代码</el-divider>
@@ -174,6 +184,7 @@ export default {
     return {
       contractCode: '',
       uploadedFile: null,
+      uploadedReport: null,
       codeLines: 0,
       codeLength: 0,
       status: 'init', // init/detecting/completed
@@ -225,13 +236,10 @@ export default {
     }
   },
   methods: {
-    handleUpload (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        this.$message.error('文件大小超过10MB限制')
-        return false
-      }
-
-      this.uploadedFile = file
+    handleUpload(file) {
+      console.log('上传的合约文件:', file);
+      this.uploadedFile = file;
+      // 可选：预览内容
       const reader = new FileReader()
       reader.onload = (e) => {
         this.contractCode = e.target.result
@@ -239,26 +247,58 @@ export default {
       reader.readAsText(file)
       return false
     },
-
-    handleSystemUpload (file) {
-      this.form.systemFile = file
+    handleReportUpload(file) {
+      this.uploadedReport = file
       return false
     },
+    async startDetection() {
+      console.log('准备上传的合约文件:', this.uploadedFile);
+      if (!this.uploadedFile) {
+        this.$message.error('请上传合约文件');
+        return;
+      }
+      this.status = 'detecting';
+      this.detecting = true;
 
-    handleContractUpload (file) {
-      this.form.contractFile = file
-      return false
-    },
+      // 1. 上传合约文件和漏洞报告到后端
+      const formData = new FormData();
+      formData.append('contract', this.uploadedFile);
+      if (this.uploadedReport) formData.append('report', this.uploadedReport);
 
-    startDetection () {
-      // 跳转到进度展示页，由progress页负责检测和后续跳转
-      this.$router.push({
-        path: '/detect/progress',
-        query: {
-          code: this.contractCode,
-          lines: this.codeLines
-        }
-      })
+      try {
+        // 上传文件
+        const uploadRes = await this.$axios.post('http://localhost:5500/api/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        const contractPath = uploadRes.data.contractPath;
+        const reportPath = uploadRes.data.reportPath; // 可能为null
+
+        // 2. 发送分析命令
+        const params = {
+          contractPath,
+          reportPath,
+          needCFG: true
+        };
+        const res = await this.$axios.post('http://localhost:5500/api/analyze', params);
+
+        // 3. 跳转到详情页，传递结果文件路径
+        this.$router.push({
+          path: '/fullcheck/repair-detail',
+          query: {
+            bugs: res.data.bugsPath,
+            report: res.data.reportPath,
+            pdfOriginal: res.data.pdfOriginal,
+            pdfPatched: res.data.pdfPatched,
+            pdfConstructorOriginal: res.data.pdfConstructorOriginal,
+            pdfConstructorPatched: res.data.pdfConstructorPatched
+          }
+        });
+      } catch (e) {
+        this.$message.error('检测失败: ' + (e.response?.data?.message || e.message));
+        this.status = 'init';
+      } finally {
+        this.detecting = false;
+      }
     },
 
     // 风险评分计算方法
@@ -300,6 +340,21 @@ function transfer(address to, uint value) public {
     goToAdvanced () {
       this.$router.push('/repair-detail')
     }
+  },
+  async mounted() {
+
+    const { bugs, report, pdfOriginal, pdfPatched, pdfConstructorOriginal, pdfConstructorPatched } = this.$route.query;
+
+    const bugsRes = await axios.get(bugs);
+    this.bugDetails = bugsRes.data;
+
+    const reportRes = await axios.get(report);
+    this.patchData = reportRes.data;
+
+    this.originalPdf = pdfOriginal;
+    this.patchedPdf = pdfPatched;
+    this.constructorOriginalPdf = pdfConstructorOriginal;
+    this.constructorPatchedPdf = pdfConstructorPatched;
   }
 }
 </script>

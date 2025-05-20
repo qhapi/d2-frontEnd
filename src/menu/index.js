@@ -49,7 +49,9 @@ export const menuAside = supplementPath([
   { path: '/detect/result', title: '合约漏洞速查', icon: 'tachometer' },
   { path: '/locate/vulrepair', title: '精准检测与修复', icon: 'list' },
   { path: '/fuzzTest', title: '底层系统模糊测试', icon: 'desktop' },
-  { path: '/locate/vuldatabase', title: '漏洞数据库', icon: 'fa fa-square-full' }
+  { path: '/locate/vuldatabase', title: '漏洞数据库', icon: 'fa fa-square-full' },
+  { path: '/fullcheck', title: '全流程漏洞检查', icon: 'el-icon-s-check' },
+  //{ path: '/fullcheck/repair-detail', title: '漏洞修复详情', icon: 'el-icon-s-check' },
   // { path: '/dashboard', title: '控制台', icon: 'tachometer' },
   // { path: '/detect/detectResult', title: '漏洞检测结果', icon: 'tachometer' },
   // { path: '/locate/vulrepair', title: '精准检测与修复', icon: 'list' },

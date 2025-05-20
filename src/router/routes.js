@@ -23,6 +23,11 @@ const frameIn = [
         component: () => import('@/pages/fullcheck/index')
       },
       {
+        path: '/fullcheck/repair-detail',
+        name: 'repair-detail',
+        component: () => import('@/pages/fullcheck/repair-detail')
+      },
+      {
         path: 'fuzzTest',
         name: 'fuzzTest',
         meta: {

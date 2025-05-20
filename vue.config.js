@@ -46,6 +46,10 @@ module.exports = {
         pathRewrite: {
           '^/api': ''
         }
+      },
+      '/file': {
+        target: 'http://localhost:5500',
+        changeOrigin: true
       }
     }
   },
@@ -160,6 +164,14 @@ module.exports = {
         .plugin('webpack-bundle-analyzer')
         .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin)
     }
+    config.module
+      .rule('pdf')
+      .test(/\.pdf$/)
+      .use('file-loader')
+      .loader('file-loader')
+      .options({
+        name: 'assets/[name].[hash:8].[ext]'
+      })
   },
   // 不输出 map 文件
   productionSourceMap: false,
