@@ -8,8 +8,8 @@ const _import = require('@/libs/util.import.' + process.env.NODE_ENV)
  */
 const frameIn = [
   {
-    path: '/',
-    redirect: { name: 'index' },
+    path: '',
+    redirect: { name: 'fullcheck' },
     component: layoutHeaderAside,
     children: [
       // 首页
@@ -17,97 +17,10 @@ const frameIn = [
         path: '/fullcheck',
         name: 'fullcheck',
         meta: {
-          auth: true
-        },
-        component: () => import('@/pages/fullcheck/index'),
-        meta: {
+          auth: true,
           title: '全流程漏洞检查'
-        }
-      },
-      {
-        path: 'index',
-        name: 'index',
-        meta: {
-          auth: true
         },
-        component: _import('system/index')
-        // component: () => import('@/pages/fullcheck/index')
-      },
-      // 新建
-      {
-        path: 'detect/locateOne',
-        name: 'locateOne',
-        meta: {
-          title: '漏洞定位修复',
-          auth: true
-        },
-        component: _import('system/detect/locateOne')
-      },
-      // 加入
-      // // 配置
-      // {
-      //   path: 'profile',
-      //   name: 'profile',
-      //   meta: {
-      //     title: '个人配置',
-      //     auth: true
-      //   },
-      //   component: _import('system/profile')
-      // },
-      // 汇总页面
-      {
-        path: 'resultPage',
-        name: 'resultPage',
-        meta: {
-          title: '检测结果',
-          auth: true
-        },
-        component: _import('system/resultPage')
-      },
-      {
-        path: '/locate/transactionUpload',
-        name: 'transactionUpload',
-        meta: {
-          title: '漏洞定位',
-          auth: true
-        },
-        component: _import('system/locate/transactionUpload')
-      },
-      {
-        path: 'locate/locateResult',
-        name: 'locateResult',
-        meta: {
-          title: '漏洞定位结果',
-          auth: true
-        },
-        component: _import('system/locate/locateResult')
-      },
-      {
-        path: 'locate/dappFLocateResult',
-        name: 'dappFLocateResult',
-        meta: {
-          title: 'DAPPSCAN定位结果',
-          auth: true
-        },
-        component: _import('system/locate/dappFLocateResult')
-      },
-      {
-        path: 'detect/detectResult',
-        name: 'detectResult',
-        meta: {
-          title: '漏洞检测结果',
-          auth: true
-        },
-        component: _import('system/detect/detectResult')
-      },
-      {
-        path: 'locate/locateConfidence',
-        name: 'locateConfidence',
-        meta: {
-          title: '漏洞置信度分数',
-          auth: true
-        },
-        component: _import('system/locate/locateConfidence')
+        component: () => import('@/pages/fullcheck/index')
       },
       {
         path: 'fuzzTest',
@@ -116,17 +29,7 @@ const frameIn = [
           title: '底层系统模糊测试',
           auth: true
         },
-        component: _import('system/fuzzTest')
-      },
-      {
-        // path: '/udetail/:channelname/:uid',
-        path: 'detect/locateMul',
-        name: 'locateMul',
-        meta: {
-          title: '修复结果',
-          auth: true
-        },
-        component: _import('system/detect/locateMul')
+        component: () => import('@/pages/fuzz')
       },
       {
         path: '/detect/progress',
@@ -143,50 +46,21 @@ const frameIn = [
       {
         path: '/locate/vuldatabase',
         name: 'vulnerability-database',
-        component: () => import('@/pages/locate/vuldatabase'), 
-        meta: { 
+        component: () => import('@/pages/locate/vuldatabase'),
+        meta: {
           title: '漏洞数据库',
-          icon: 'fa fa-database' 
+          icon: 'fa fa-database'
         }
       },
       {
         path: '/locate/vulrepair',
-        name: 'vulnerability-repair',
+        name: 'vulnrepair',
         component: () => import('@/pages/locate/vulrepair'),
-        meta: { 
+        meta: {
           title: '精准检测与修复',
-          icon: 'el-icon-magic-stick' 
+          icon: 'el-icon-magic-stick'
         }
       },
-      // // 演示页面
-      // {
-      //   path: 'page1',
-      //   name: 'page1',
-      //   meta: {
-      //     title: '页面 1',
-      //     auth: true
-      //   },
-      //   component: _import('demo/page1')
-      // },
-      // {
-      //   path: 'page2',
-      //   name: 'page2',
-      //   meta: {
-      //     title: '页面 2',
-      //     auth: true
-      //   },
-      //   component: _import('demo/page2')
-      // },
-      // {
-      //   path: 'page3',
-      //   name: 'page3',
-      //   meta: {
-      //     title: '页面 3',
-      //     auth: true
-      //   },
-      //   component: _import('demo/page3')
-      // },
-      // 系统 前端日志
       {
         path: 'log',
         name: 'log',
@@ -210,19 +84,10 @@ const frameIn = [
         hidden: true,
         component: _import('system/function/redirect')
       },
-      
-      {
-        path: '/repair-detail',
-        name: 'repair-detail',
-        component: () => import('@/pages/fullcheck/repair-detail'),
-        meta: {
-          title: '漏洞精准定位'
-        }
-      },
       {
         path: '/lowlevel-check',
         name: 'lowlevel-check',
-        component: () => import('@/pages/fullcheck/lowlevel-check'),
+        component: () => import('@/pages/fuzz/lowlevel-check'),
         meta: {
           title: '漏洞补丁修复'
         }
@@ -230,12 +95,12 @@ const frameIn = [
       {
         path: '/new',
         name: 'new',
-        component: () => import('@/pages/fullcheck/new'),
+        component: () => import('@/pages/fuzz/new'),
         meta: {
           title: '底层漏洞检测'
         }
       }
-      
+
     ]
   }
 ]

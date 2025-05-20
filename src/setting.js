@@ -16,8 +16,8 @@ export default {
   page: {
     opened: [
       {
-        name: 'index',
-        fullPath: '/index',
+        name: 'fullcheck',
+        fullPath: '/fullcheck',
         meta: {
           title: '首页',
           auth: false

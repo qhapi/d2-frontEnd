@@ -18,8 +18,8 @@
           <!-- 实时进度 -->
           <div class="real-time-progress">
             <h4><i class="el-icon-data-line"></i> 修复进度</h4>
-            <el-progress 
-              type="dashboard" 
+            <el-progress
+              type="dashboard"
               :percentage="overallProgress"
               :color="progressColors">
               <div class="progress-status">
@@ -36,21 +36,21 @@
           <div class="stage-details">
             <h4><i class="el-icon-timer"></i> 阶段详情</h4>
             <div class="stage-list">
-              <div 
-                v-for="(stage, index) in stages" 
-                :key="stage.name" 
+              <div
+                v-for="(stage, index) in stages"
+                :key="stage.name"
                 class="stage-item"
                 :class="{ 'active-stage': index === currentStep }">
                 <div class="stage-header">
                   <i :class="stage.icon" :style="{color: stage.color}"></i>
                   <span class="stage-name">{{ stage.name }}</span>
-                  <el-tag 
-                    size="mini" 
+                  <el-tag
+                    size="mini"
                     :type="stage.status === 'success' ? 'success' : 'info'">
                     {{ stageStatusText(stage) }}
                   </el-tag>
                 </div>
-                <el-progress 
+                <el-progress
                   :percentage="stage.progress"
                   :stroke-width="8"
                   :color="stage.color"
@@ -121,8 +121,8 @@
                 <el-table-column prop="time" label="耗时" width="100"></el-table-column>
                 <el-table-column label="详情" width="120">
                   <template slot-scope="{row}">
-                    <el-button 
-                      size="mini" 
+                    <el-button
+                      size="mini"
                       @click="showTestDetail(row)"
                       type="text">
                       查看详情
@@ -133,14 +133,14 @@
             </div>
 
             <!-- 操作按钮区域 -->
-            <div class="action-buttons">
-              <el-button 
-                type="primary" 
+            <div class="action-buttons row-flex">
+              <el-button
+                type="primary"
                 @click="downloadReport"
                 icon="el-icon-download">
                 下载完整报告
               </el-button>
-              <el-button 
+              <el-button
                 type="success"
                 @click="goToNewPage"
                 icon="el-icon-finished">
@@ -152,7 +152,7 @@
           <!-- 修复进行中显示 -->
           <div v-else class="repairing-panel">
             <h3 class="analyzing-title">
-              <i class="el-icon-loading"></i> 
+              <i class="el-icon-loading"></i>
               正在应用修复方案...
             </h3>
             <div class="code-compare">
@@ -177,7 +177,7 @@
         <el-tag :type="selectedTest.status === '通过' ? 'success' : 'danger'">
           {{ selectedTest.status }}
         </el-tag>
-        
+
         <div class="test-info">
           <p><strong>测试类型：</strong>{{ selectedTest.type }}</p>
           <p><strong>执行时间：</strong>{{ selectedTest.time }}</p>
@@ -199,7 +199,7 @@ import { CodeDiff } from 'vue-code-diff'
 
 export default {
   components: { CodeDiff },
-  data() {
+  data () {
     return {
       currentStep: 0,
       overallProgress: 0,
@@ -238,17 +238,17 @@ function transfer(address _to, uint _value) {
       }
     }
   },
-  mounted() {
+  mounted () {
     this.startRepairProcess()
   },
   methods: {
-    startRepairProcess() {
+    startRepairProcess () {
       this.startTime = Date.now()
       this.updateElapsedTime()
-      
+
       const timer = setInterval(() => {
         this.overallProgress = Math.min(this.overallProgress + 3, 100)
-        
+
         // 调整阶段计算逻辑（每个阶段约33%）
         const activeStage = Math.floor(this.overallProgress / 34)
         this.currentStep = Math.min(activeStage, 2)
@@ -258,11 +258,11 @@ function transfer(address _to, uint _value) {
             this.stages[activeStage].progress + 10,
             100
           )
-          
+
           if (this.stages[activeStage].progress >= 100) {
             this.stages[activeStage].status = 'success'
             this.addLog('success', `${this.stages[activeStage].name} 阶段完成`)
-            
+
             // 在单元测试阶段完成后结束
             if (activeStage === 2) {
               clearInterval(timer)
@@ -284,14 +284,14 @@ function transfer(address _to, uint _value) {
           this.updateFinalStats()
         }
       }, 500)
-      
+
       this.testCases = this.generateTestCases()
     },
-    generateTestCases() {
+    generateTestCases () {
       return [
-        { 
-          name: '转账功能基础测试', 
-          status: '通过', 
+        {
+          name: '转账功能基础测试',
+          status: '通过',
           time: '1.2s',
           type: '功能测试',
           assertions: [
@@ -299,9 +299,9 @@ function transfer(address _to, uint _value) {
             { description: '接收方余额增加', success: true }
           ]
         },
-        { 
-          name: '大额转账溢出测试', 
-          status: '通过', 
+        {
+          name: '大额转账溢出测试',
+          status: '通过',
           time: '2.8s',
           type: '安全测试',
           assertions: [
@@ -311,7 +311,7 @@ function transfer(address _to, uint _value) {
         }
       ]
     },
-    addLog(type, content) {
+    addLog (type, content) {
       const types = {
         success: 'el-icon-success color-success',
         error: 'el-icon-error color-error',
@@ -324,7 +324,7 @@ function transfer(address _to, uint _value) {
       })
       if (this.repairLogs.length > 100) this.repairLogs.shift()
     },
-    generateRandomLog(stage) {
+    generateRandomLog (stage) {
       const stageMessages = {
         0: ['正在编译智能合约', '解决依赖冲突', '优化编译器参数'],
         1: ['应用安全补丁', '验证代码变更', '重构受影响函数'],
@@ -334,7 +334,7 @@ function transfer(address _to, uint _value) {
       const actions = stageMessages[stage] || ['正在处理...']
       return actions[Math.floor(Math.random() * actions.length)]
     },
-    updateElapsedTime() {
+    updateElapsedTime () {
       setInterval(() => {
         if (!this.repairCompleted) {
           const seconds = Math.floor((Date.now() - this.startTime) / 1000)
@@ -343,33 +343,33 @@ function transfer(address _to, uint _value) {
         }
       }, 1000)
     },
-    updateFinalStats() {
+    updateFinalStats () {
       this.testCoverage = 92.5
       this.securityScore = 9.3
       this.scoreImprovement = 35
       this.testPassRate = 100
     },
-    stageStatusText(stage) {
+    stageStatusText (stage) {
       return {
         waiting: '等待中',
         processing: '进行中',
         success: '已完成'
       }[stage.status]
     },
-    tableRowClassName({row}) {
+    tableRowClassName ({ row }) {
       return row.status === '运行中' ? 'warning-row' : ''
     },
-    showTestDetail(row) {
+    showTestDetail (row) {
       this.selectedTest = row
       this.testDetailVisible = true
     },
-    downloadReport() {
+    downloadReport () {
       this.$message.success('已生成完整修复报告')
     },
-    returnToScan() {
+    returnToScan () {
       this.$router.push('/vulnerability-scan')
     },
-    goToNewPage() {
+    goToNewPage () {
       this.$router.push('/new')
     }
   }
@@ -415,7 +415,7 @@ function transfer(address _to, uint _value) {
         max-height: 300px;
         overflow-y: auto;
         padding-right: 10px;
-        
+
         .stage-item {
           margin: 15px 0;
           padding: 15px;
@@ -449,7 +449,7 @@ function transfer(address _to, uint _value) {
 
   .result-panel {
     height: calc(100vh - 200px);
-    
+
     .realtime-log {
       height: 200px;
       margin-bottom: 20px;
@@ -460,7 +460,7 @@ function transfer(address _to, uint _value) {
         border-radius: 4px;
         padding: 10px;
         background: #fafafa;
-        
+
         .log-item {
           padding: 8px 0;
           display: flex;
@@ -495,15 +495,15 @@ function transfer(address _to, uint _value) {
         &:hover {
           transform: translateY(-3px);
         }
-        &.success { 
+        &.success {
           background: linear-gradient(45deg, #f0f9eb, #e1f3d8);
           border: 1px solid #c2e7b0;
         }
-        &.warning { 
+        &.warning {
           background: linear-gradient(45deg, #fdf6ec, #faecd8);
           border: 1px solid #f0d19c;
         }
-        &.info { 
+        &.info {
           background: linear-gradient(45deg, #f4f4f5, #e9e9eb);
           border: 1px solid #d3d4d6;
         }
@@ -538,8 +538,11 @@ function transfer(address _to, uint _value) {
     .action-buttons {
       margin-top: 30px;
       text-align: center;
+      display: flex;
+      justify-content: center;
+      gap: 24px;
       .el-button {
-        margin: 0 10px;
+        margin: 0;
         padding: 12px 24px;
         font-size: 14px;
         border-radius: 20px;

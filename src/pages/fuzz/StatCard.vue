@@ -23,7 +23,7 @@ export default {
     }
   },
   computed: {
-    formattedValue() {
+    formattedValue () {
       return Number(this.value).toLocaleString()
     }
   }

@@ -10,11 +10,11 @@
             <div class="chart-item">
               <ve-ring :data="typeDistribution" :settings="chartSettings" height="300px"></ve-ring>
             </div>
-            
+
             <!-- 柱状图对比数量 -->
             <div class="chart-item">
-              <ve-histogram 
-                :data="countData" 
+              <ve-histogram
+                :data="countData"
                 :settings="histogramSettings"
                 height="300px"
                 :extend="histogramExtend">
@@ -25,7 +25,7 @@
       </el-col>
 
       <!-- 详细数据卡片 -->
-      <el-col 
+      <el-col
         v-for="(item, index) in vulnerabilityData"
         :key="index"
         :xs="24" :sm="12" :md="6">
@@ -49,8 +49,8 @@
                 </el-tooltip>
               </div>
               <div class="accuracy-display">
-                <el-progress 
-                  :percentage="item.accuracy * 100" 
+                <el-progress
+                  :percentage="item.accuracy * 100"
                   :stroke-width="16"
                   :color="progressColors[index]"
                   :format="formatAccuracy"
@@ -69,33 +69,33 @@
 </template>
 <script>
 export default {
-  data() {
+  data () {
     return {
       vulnerabilityData: [
-        { 
-          name: 'Integer Overflow', 
-          count: 275, 
+        {
+          name: 'Integer Overflow',
+          count: 275,
           accuracy: 0.9487,
           icon: 'el-icon-warning-outline',
           color: '#FF6B6B'
         },
-        { 
-          name: 'Delegatecall', 
-          count: 196, 
+        {
+          name: 'Delegatecall',
+          count: 196,
           accuracy: 0.9489,
           icon: 'el-icon-connection',
           color: '#4ECDC4'
         },
-        { 
-          name: 'Timestamp', 
-          count: 349, 
+        {
+          name: 'Timestamp',
+          count: 349,
           accuracy: 0.9399,
           icon: 'el-icon-timer',
           color: '#45B7D1'
         },
-        { 
-          name: 'Reentrancy', 
-          count: 273, 
+        {
+          name: 'Reentrancy',
+          count: 273,
           accuracy: 0.9228,
           icon: 'el-icon-refresh',
           color: '#96CEB4'
@@ -110,7 +110,7 @@ export default {
       histogramSettings: {
         metrics: ['数量'],
         dimension: ['漏洞类型'],
-        labelMap: { '数量': '样本数量' },
+        labelMap: { 数量: '样本数量' },
         axisSite: { right: ['准确率'] },
         showLine: ['准确率']
       },
@@ -126,14 +126,14 @@ export default {
   },
   computed: {
     // 卡片渐变样式
-    cardStyles() {
+    cardStyles () {
       return this.vulnerabilityData.map(item => ({
         background: `linear-gradient(135deg, ${item.color}20 0%, #ffffff 100%)`,
         border: `1px solid ${item.color}30`
       }))
     },
     // 进度条颜色
-    progressColors() {
+    progressColors () {
       return this.vulnerabilityData.map(item => ({
         0: '#FF6B6B',
         50: '#FFE66D',
@@ -141,29 +141,29 @@ export default {
       }))
     },
     // 环形图数据
-    typeDistribution() {
+    typeDistribution () {
       return {
         columns: ['漏洞类型', '数量'],
         rows: this.vulnerabilityData.map(item => ({
-          '漏洞类型': item.name,
-          '数量': item.count
+          漏洞类型: item.name,
+          数量: item.count
         }))
       }
     },
     // 柱状图数据
-    countData() {
+    countData () {
       return {
         columns: ['漏洞类型', '数量', '准确率'],
         rows: this.vulnerabilityData.map(item => ({
-          '漏洞类型': item.name,
-          '数量': item.count,
-          '准确率': item.accuracy
+          漏洞类型: item.name,
+          数量: item.count,
+          准确率: item.accuracy
         }))
       }
     }
   },
   methods: {
-    formatAccuracy(percentage) {
+    formatAccuracy (percentage) {
       return `${percentage.toFixed(2)}%`
     }
   }
@@ -230,7 +230,7 @@ export default {
 
       .data-item {
         margin: 15px 0;
-        
+
         .label {
           display: block;
           color: #7f8c8d;
@@ -286,10 +286,10 @@ export default {
   .chart-container {
     grid-template-columns: 1fr !important;
   }
-  
+
   .stat-card {
     margin-bottom: 15px;
-    
+
     .accuracy-value {
       font-size: 12px !important;
     }
