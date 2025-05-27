@@ -154,35 +154,35 @@ app.post('/getSourceCode', (req, res) => {
 })
 
 app.post('/getMockCode', (req, res) => {
-  const { fileName } = req.body;
+  const { fileName } = req.body
   // 根据文件名生成模拟代码
-  const code = generateMockCode(fileName);
-  res.send(code);
+  const code = generateMockCode(fileName)
+  res.send(code)
   console.log(code)
   console.log('yes')
-});
+})
 
-//模拟的置信度数据
+// 模拟的置信度数据
 const confidenceData = {
   'ContractA.sol': {
-    '1': 0.9,
-    '2': 0.85,
-    '3': 0.95
+    1: 0.9,
+    2: 0.85,
+    3: 0.95
   },
   'ContractB.sol': {
-    '1': 0.7,
-    '2': 0.8,
-    '3': 0.6
+    1: 0.7,
+    2: 0.8,
+    3: 0.6
   }
-};
+}
 
-//模拟代码
-function generateMockCode(fileName) {
+// 模拟代码
+function generateMockCode (fileName) {
   let code = `// ${fileName}
 pragma solidity ^0.8.0;
 
 contract ${fileName.replace('.sol', '')} {
-`;
+`
 
   for (let i = 1; i <= 5; i++) {
     code += `  // Line ${i}
@@ -190,24 +190,22 @@ contract ${fileName.replace('.sol', '')} {
     // Some code here
   }
 
-`;
+`
   }
 
-  code += `}`;
-  return code;
+  code += '}'
+  return code
 }
 
-
-
 app.post('/getConfidence', (req, res) => {
-  const { fileName, lineNumber } = req.body;
-  const confidence = confidenceData[fileName][lineNumber.toString()];
+  const { fileName, lineNumber } = req.body
+  const confidence = confidenceData[fileName][lineNumber.toString()]
   if (confidence !== undefined) {
-    res.send({ confidence });
+    res.send({ confidence })
   } else {
-    res.status(404).send({ message: 'Confidence not found' });
+    res.status(404).send({ message: 'Confidence not found' })
   }
-});
+})
 
 app.listen(port, () => {
   console.log(`文件上传服务器正在运行在 http://localhost:${port}`)

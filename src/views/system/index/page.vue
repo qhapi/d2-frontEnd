@@ -31,7 +31,7 @@
       </el-input>
       <div slot="footer">
         <el-button @click="codeDialogVisible = false">取消</el-button>
-        <el-button 
+        <el-button
           type="primary"
           @click="submitCode"
           :loading="codeSubmitting">
@@ -55,7 +55,7 @@
       </el-upload>
       <div slot="footer">
         <el-button @click="fileDialogVisible = false">取消</el-button>
-        <el-button 
+        <el-button
           type="primary"
           @click="submitFile"
           :loading="fileSubmitting">
@@ -71,7 +71,7 @@ import axios from 'axios'
 
 export default {
   name: 'ContractCheck',
-  data() {
+  data () {
     return {
       // 代码输入相关
       codeDialogVisible: false,
@@ -86,7 +86,7 @@ export default {
   },
   methods: {
     // 入口选择处理
-    handleCommand(command) {
+    handleCommand (command) {
       if (command === 'upload') {
         this.fileDialogVisible = true
       } else {
@@ -95,20 +95,20 @@ export default {
     },
 
     // 文件选择处理
-    handleFileChange(file) {
+    handleFileChange (file) {
       this.uploadFile = file.raw
     },
 
     // 提交代码检测
-    async submitCode() {
+    async submitCode () {
       if (!this.contractCode.trim()) return
-      
+
       this.codeSubmitting = true
       try {
         const response = await axios.post('http://localhost:5000/detect', {
           code: this.contractCode
         })
-        
+
         this.$router.push({
           name: 'result',
           params: {
@@ -132,16 +132,16 @@ export default {
     },
 
     // 提交文件检测
-    async submitFile() {
+    async submitFile () {
       if (!this.uploadFile) return
-      
+
       this.fileSubmitting = true
       try {
         const formData = new FormData()
         formData.append('file', this.uploadFile)
 
         const response = await axios.post(
-          'http://localhost:5000/upload', 
+          'http://localhost:5000/upload',
           formData,
           { headers: { 'Content-Type': 'multipart/form-data' } }
         )
@@ -209,7 +209,7 @@ export default {
 .code-editor {
   font-family: 'Fira Code', monospace;
   font-size: 14px;
-  
+
   ::v-deep .el-textarea__inner {
     font-family: inherit;
     line-height: 1.6;

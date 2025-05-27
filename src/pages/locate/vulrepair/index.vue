@@ -219,6 +219,7 @@
           </el-col>
         </el-row>
         <el-button type="primary" @click="activeStep++">进入修复</el-button>
+        <el-button type="success" style="margin-left: 16px;" :loading="bytecodeRepairing" @click="handleBytecodeRepair">字节码修复</el-button>
       </div>
 
       <!-- 步骤3：修复方案 -->
@@ -238,7 +239,7 @@
                   <pre><code class="hljs solidity">{{ fixedCode }}</code></pre>
                 </div>
               </el-col>
-            </el-row>
+              </el-row>
             <div class="code-legend">
               <el-tag type="danger">删除/问题代码</el-tag>
               <el-tag type="success">新增/修复代码</el-tag>
@@ -309,9 +310,14 @@
 </template>
 
 <script>
+import axios from 'axios'
+import { mapState } from 'vuex'
+
 export default {
   data () {
     return {
+      taskId: null,
+      pollInterval: null,
       activeStep: 0,
       contractAddress: '',
       transactions: [
@@ -400,10 +406,13 @@ contract Fixed {
       vulVersions: 'Solidity <0.8.0',
       vulLevel: 4,
       logInterval: null,
-      timer: null
+      timer: null,
+      hasAnalyzed: false,
+      bytecodeRepairing: false
     }
   },
   computed: {
+    ...mapState('contract', ['contractFile', 'contractCode', 'uploadedReport']),
     contractAddressValid () {
       return this.contractAddress.length === 42 && this.contractAddress.startsWith('0x')
     },
@@ -415,37 +424,113 @@ contract Fixed {
   watch: {
     activeStep (val) {
       if (val === 0) {
-        this.initRepairDetail()
+        this.tryAutoAnalyze()
       }
     }
   },
   mounted () {
     if (this.activeStep === 0) {
-      this.initRepairDetail()
+      this.tryAutoAnalyze()
     }
   },
   methods: {
-    handleAnalyze () {
-      // 兼容老流程，直接进入 repair-detail 分析
-      this.activeStep = 0
-      this.initRepairDetail()
+    tryAutoAnalyze () {
+      console.log('this.contractFile', this.contractFile)
+      if (this.contractFile && !this.hasAnalyzed) {
+        this.handleAnalyze()
+      }
     },
-    // repair-detail 分析流程
-    initRepairDetail () {
-      // 重置所有分析相关数据
-      this.currentStep = 0
+    async handleAnalyze () {
+      // 用全局 contractFile/contractCode 发起后端分析
+      const formData = new FormData()
+      if (this.contractFile) {
+        formData.append('file', this.contractFile)
+      } else if (this.contractCode) {
+        const blob = new Blob([this.contractCode], { type: 'text/plain' })
+        formData.append('file', blob, 'contract.sol')
+      } else {
+        this.$message.error('请先上传或输入合约')
+        return
+      }
+      this.hasAnalyzed = true
+      try {
+        const response = await axios.post('http://localhost:5011/analyze', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        this.taskId = response.data.task_id
+        this.startPolling()
+        this.resetAnalysisData()
+      } catch (error) {
+        this.$message.error('分析启动失败: ' + error.message)
+        // 启动模拟流程
+        this.simulateLocation()
+      }
+    },
+    resetAnalysisData () {
       this.locateProgress = 0
-      this.analyzedBlocks = 0
-      this.avgTime = 0
-      this.scanSpeed = 0
-      this.memoryUsage = 0
-      this.remainingTime = '计算中...'
-      this.locateCompleted = false
-      this.currentFunction = ''
       this.analysisLogs = []
-      this.currentNode = '1-1'
-      if (this.logInterval) clearInterval(this.logInterval)
-      if (this.timer) clearInterval(this.timer)
+      this.vulnerabilities = []
+      this.locateCompleted = false
+    },
+    startPolling () {
+      this.pollInterval = setInterval(async () => {
+        try {
+          const response = await axios.get(`http://localhost:5011/results/${this.taskId}`)
+          if (response.data.log) {
+            this.parseBackendLog(response.data.log)
+          }
+          switch (response.data.status) {
+            case 'processing':
+              this.updateProgressSimulation()
+              break
+            case 'completed':
+              this.handleCompleted(response.data)
+              break
+            case 'failed':
+              this.handleFailure(response.data)
+              break
+          }
+        } catch (error) {
+          console.error('获取结果失败:', error)
+        }
+      }, 2000)
+    },
+    parseBackendLog (logText) {
+      const logs = logText.split('\n').filter(line => line.trim())
+      logs.forEach(line => {
+        this.addLog('process', line)
+      })
+    },
+    updateProgressSimulation () {
+      this.locateProgress = Math.min(this.locateProgress + 5, 95)
+      this.analyzedBlocks = Math.floor(this.locateProgress / 3)
+    },
+    handleCompleted (data) {
+      clearInterval(this.pollInterval)
+      this.locateProgress = 100
+      this.locateCompleted = true
+      this.vulnerabilities = data.vulnerabilities.map(vul => ({
+        ...vul,
+        vulTitle: vul.type,
+        vullocate: `Line ${vul.line}`,
+        vulCVE: 'CVE-待补充',
+        vulLevel: this.getVulLevel(vul.type)
+      }))
+      this.addLog('success', '漏洞分析完成')
+    },
+    getVulLevel (type) {
+      const levelMap = {
+        Reentrancy: 5,
+        'Integer Overflow': 4,
+        'Unchecked Low Level Call': 3
+      }
+      return levelMap[type] || 3
+    },
+    handleFailure (data) {
+      clearInterval(this.pollInterval)
+      this.$message.error(`分析失败: ${data.log}`)
+      this.addLog('error', '分析失败: ' + data.log)
+      // 启动模拟流程
       this.simulateLocation()
     },
     simulateLocation () {
@@ -469,32 +554,49 @@ contract Fixed {
         }
       }, 300)
     },
+    calculateRemainingTime () {
+      if (!this.scanSpeed || this.scanSpeed === 0) return '计算中...'
+      const remaining = (100 - this.locateProgress) * 1000 / this.scanSpeed
+      const minutes = Math.floor(remaining / 60)
+      const seconds = Math.floor(remaining % 60)
+      return `${minutes}分${seconds.toString().padStart(2, '0')}秒`
+    },
     addLog (type, content) {
-      const types = {
+      const iconMap = {
         success: 'el-icon-success color-success',
         warning: 'el-icon-warning color-warning',
         error: 'el-icon-error color-error',
         process: 'el-icon-info color-info'
       }
       this.analysisLogs.push({
-        type: types[type],
+        type: iconMap[type] || 'el-icon-info',
         time: new Date().toLocaleTimeString(),
         content
       })
       if (this.analysisLogs.length > 50) this.analysisLogs.shift()
     },
-    getRandomFunction () {
-      const functions = [
-        'transfer()', 'approve()', 'mint()',
-        'burn()', 'balanceOf()', 'allowance()'
-      ]
-      return functions[Math.floor(Math.random() * functions.length)]
-    },
-    calculateRemainingTime () {
-      const remaining = (100 - this.locateProgress) * 1000 / this.scanSpeed
-      const minutes = Math.floor(remaining / 60)
-      const seconds = Math.floor(remaining % 60)
-      return `${minutes}分${seconds.toString().padStart(2, '0')}秒`
+    /*
+    handleAnalyze () {
+      // 兼容老流程，直接进入 repair-detail 分析
+      this.activeStep = 0
+      this.initRepairDetail()
+    }, */
+    // repair-detail 分析流程
+    initRepairDetail () {
+      // 重置所有分析相关数据
+      this.currentStep = 0
+      this.locateProgress = 0
+      this.analyzedBlocks = 0
+      this.avgTime = 0
+      this.scanSpeed = 0
+      this.memoryUsage = 0
+      this.remainingTime = '计算中...'
+      this.locateCompleted = false
+      this.currentFunction = ''
+      this.analysisLogs = []
+      this.currentNode = '1-1'
+      if (this.logInterval) clearInterval(this.logInterval)
+      if (this.timer) clearInterval(this.timer)
     },
     confirmFix () {
       this.$confirm('确认应用修复方案并执行验证?', '修复确认', {
@@ -507,7 +609,49 @@ contract Fixed {
     },
     showMoreDetail () {
       // 打开详细报告逻辑
+    },
+    async handleBytecodeRepair () {
+      this.bytecodeRepairing = true
+      const formData = new FormData()
+      formData.append('contract', this.contractFile)
+      if (this.uploadedReport) formData.append('report', this.uploadedReport)
+      try {
+        // 上传文件
+        const uploadRes = await this.$axios.post('http://localhost:5500/api/upload', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        })
+        const contractPath = uploadRes.data.contractPath
+        const reportPath = uploadRes.data.reportPath // 可能为null
+        // 2. 发送分析命令
+        const params = {
+          contractPath,
+          reportPath,
+          needCFG: true
+        }
+        const res = await this.$axios.post('http://localhost:5500/api/analyze', params)
+        console.log(res)
+        // 3. 跳转到详情页，传递结果文件路径
+        this.$router.push({
+          path: '/locate/repair-detail',
+          query: {
+            bugs: res.data.bugsPath,
+            report: res.data.reportPath,
+            pdfOriginal: res.data.pdfOriginal,
+            pdfPatched: res.data.pdfPatched,
+            pdfConstructorOriginal: res.data.pdfConstructorOriginal,
+            pdfConstructorPatched: res.data.pdfConstructorPatched
+          }
+        })
+      } catch (e) {
+        this.$message.error('检测失败: ' + (e.response?.data?.message || e.message))
+        this.status = 'init'
+      } finally {
+        this.bytecodeRepairing = false
+      }
     }
+  },
+  beforeDestroy () {
+    clearInterval(this.pollInterval)
   }
 }
 </script>

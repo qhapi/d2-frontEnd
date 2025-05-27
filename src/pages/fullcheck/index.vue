@@ -56,6 +56,15 @@ contract Example {
             </transition>
           </div>
 
+          <el-upload
+            action="#"
+            :before-upload="handleReportUpload"
+            :show-file-list="false"
+            accept=".json">
+            <el-button size="mini" type="info" icon="el-icon-upload">上传漏洞报告（可选）</el-button>
+            <span v-if="uploadedReport" style="margin-left:8px;">{{ uploadedReport.name }}</span>
+          </el-upload>
+
           <el-button
             type="primary"
             @click="startDetection"
@@ -168,6 +177,7 @@ function transfer(address to, uint value) public {
 </template>
 
 <script>
+import { mapActions } from 'vuex'
 
 export default {
   data () {
@@ -222,9 +232,13 @@ export default {
       this.hasContent = newVal.length > 0
       this.codeLines = newVal.split('\n').length
       this.codeLength = newVal.replace(/\s/g, '').length
+      this.saveContractCode(newVal)
+      // 新增：打印contract模块状态
+      console.log('contract vuex state:', this.$store.state.contract)
     }
   },
   methods: {
+    ...mapActions('contract', ['saveContractFile', 'saveContractCode', 'saveUploadedReport']),
     handleUpload (file) {
       if (file.size > 10 * 1024 * 1024) {
         this.$message.error('文件大小超过10MB限制')
@@ -235,6 +249,9 @@ export default {
       const reader = new FileReader()
       reader.onload = (e) => {
         this.contractCode = e.target.result
+        this.saveContractCode(e.target.result)
+        // 新增：打印contract模块状态
+        console.log('contract vuex state:', this.$store.state.contract)
       }
       reader.readAsText(file)
       return false
@@ -250,8 +267,23 @@ export default {
       return false
     },
 
+    handleReportUpload (file) {
+      this.uploadedReport = file
+      this.saveUploadedReport(file)
+      return false
+    },
+
     startDetection () {
       // 跳转到进度展示页，由progress页负责检测和后续跳转
+      // 跳转前确保合约内容已存入vuex
+      if (this.uploadedFile) {
+        this.saveContractFile(this.uploadedFile)
+        console.log('startDetection: 保存文件到vuex', this.uploadedFile)
+      }
+      if (this.contractCode) {
+        this.saveContractCode(this.contractCode)
+        console.log('startDetection: 保存代码到vuex', this.contractCode)
+      }
       this.$router.push({
         path: '/detect/progress',
         query: {

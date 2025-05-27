@@ -62,6 +62,11 @@ const frameIn = [
         }
       },
       {
+        path: '/locate/repair-detail',
+        name: 'repair-detail',
+        component: () => import('@/pages/locate/repair-detail')
+      },
+      {
         path: 'log',
         name: 'log',
         meta: {
