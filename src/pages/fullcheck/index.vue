@@ -29,9 +29,19 @@
             <div v-if="uploadedFile" class="file-preview">
               <el-tag type="success">
                 <i class="el-icon-document"></i>
-                {{ uploadedFile.name }} ({{ formatFileSize(uploadedFile.size) }})
+                {{ uploadedFile.name }}
               </el-tag>
             </div>
+
+            <!-- 上传漏洞报告（可选） -->
+            <el-upload
+              action="#"
+              :before-upload="handleReportUpload"
+              :show-file-list="false"
+              accept=".json">
+              <el-button size="mini" type="info" icon="el-icon-upload">上传漏洞报告（可选）</el-button>
+              <span v-if="uploadedReport" style="margin-left:8px;">{{ uploadedReport.name }}</span>
+            </el-upload>
           </div>
 
           <el-divider><i class="el-icon-edit"></i> 或手动输入代码</el-divider>
@@ -184,6 +194,7 @@ export default {
     return {
       contractCode: '',
       uploadedFile: null,
+      uploadedReport: null,
       codeLines: 0,
       codeLength: 0,
       status: 'init', // init/detecting/completed
@@ -256,16 +267,23 @@ export default {
       reader.readAsText(file)
       return false
     },
-
-    handleSystemUpload (file) {
-      this.form.systemFile = file
+    handleReportUpload(file) {
+      this.uploadedReport = file
       return false
     },
+    async startDetection() {
+      console.log('准备上传的合约文件:', this.uploadedFile);
+      if (!this.uploadedFile) {
+        this.$message.error('请上传合约文件');
+        return;
+      }
+      this.status = 'detecting';
+      this.detecting = true;
 
-    handleContractUpload (file) {
-      this.form.contractFile = file
-      return false
-    },
+      // 1. 上传合约文件和漏洞报告到后端
+      const formData = new FormData();
+      formData.append('contract', this.uploadedFile);
+      if (this.uploadedReport) formData.append('report', this.uploadedReport);
 
     handleReportUpload (file) {
       this.uploadedReport = file
@@ -332,6 +350,21 @@ function transfer(address to, uint value) public {
     goToAdvanced () {
       this.$router.push('/repair-detail')
     }
+  },
+  async mounted() {
+
+    const { bugs, report, pdfOriginal, pdfPatched, pdfConstructorOriginal, pdfConstructorPatched } = this.$route.query;
+
+    const bugsRes = await axios.get(bugs);
+    this.bugDetails = bugsRes.data;
+
+    const reportRes = await axios.get(report);
+    this.patchData = reportRes.data;
+
+    this.originalPdf = pdfOriginal;
+    this.patchedPdf = pdfPatched;
+    this.constructorOriginalPdf = pdfConstructorOriginal;
+    this.constructorPatchedPdf = pdfConstructorPatched;
   }
 }
 </script>
