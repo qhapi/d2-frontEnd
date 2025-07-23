@@ -11,53 +11,8 @@
     </div>
 
     <el-row :gutter="20" class="main-content">
-      <!-- 左侧分析过程 -->
-      <el-col :span="8">
-        <el-card class="analysis-panel">
-          <div class="real-time-stats">
-            <h4><i class="el-icon-data-analysis"></i> 实时分析统计</h4>
-            <div class="stats-grid">
-              <div class="stat-item">
-                <div class="stat-title">完成进度</div>
-                <el-progress
-                  type="dashboard"
-                  :percentage="locateProgress"
-                  :color="progressColors">
-                  <span class="progress-text">{{ locateProgress }}%</span>
-                </el-progress>
-              </div>
-
-              <div class="stat-item">
-                <div class="stat-title">已检测函数</div>
-                <div class="stat-value">{{ analyzedBlocks }}/{{ totalBlocks }}</div>
-                <div class="stat-sub">平均耗时 {{ avgTime }}ms/个</div>
-              </div>
-            </div>
-          </div>
-
-          <el-divider></el-divider>
-
-          <div class="code-structure">
-            <h4><i class="el-icon-files"></i> 代码结构分析</h4>
-            <el-tree
-              :data="codeStructure"
-              :props="treeProps"
-              :highlight-current="true"
-              node-key="id"
-              :current-node-key="currentNode"
-              class="structure-tree">
-              <span slot-scope="{ node }" class="tree-node">
-                <i :class="node.icon"></i>
-                <span>{{ node.label }}</span>
-                <el-tag v-if="node.risk" size="mini" type="danger">高危</el-tag>
-              </span>
-            </el-tree>
-          </div>
-        </el-card>
-      </el-col>
-
-      <!-- 右侧主界面 -->
-      <el-col :span="16" >
+      <!-- 主界面（移除左侧面板，全宽显示） -->
+      <el-col :span="24">
         <el-card class="main-panel">
 
           <!-- 主要内容区域 -->
@@ -166,29 +121,6 @@
                   </div>
                 </template>
               </el-progress>
-
-              <div class="runtime-stats">
-                <el-row :gutter="20">
-                  <el-col :span="8">
-                    <div class="stat-box">
-                      <div class="stat-label">检测速度</div>
-                      <div class="stat-value">{{ scanSpeed }} 行/秒</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="8">
-                    <div class="stat-box">
-                      <div class="stat-label">内存占用</div>
-                      <div class="stat-value">{{ memoryUsage }} MB</div>
-                    </div>
-                  </el-col>
-                  <el-col :span="8">
-                    <div class="stat-box">
-                      <div class="stat-label">预计剩余时间</div>
-                      <div class="stat-value">{{ remainingTime }}</div>
-                    </div>
-                  </el-col>
-                </el-row>
-              </div>
             </div>
           </template>
 
@@ -291,35 +223,8 @@ export default {
     return {
       currentStep: 0,
       locateProgress: 0,
-      analyzedBlocks: 0,
-      totalBlocks: 32,
-      avgTime: 0,
-      scanSpeed: 0,
-      memoryUsage: 0,
-      remainingTime: '计算中...',
       locateCompleted: false,
       currentFunction: '',
-      currentNode: '1-1',
-      progressColors: [
-        { color: '#f56c6c', percentage: 30 },
-        { color: '#e6a23c', percentage: 70 },
-        { color: '#67c23a', percentage: 100 }
-      ],
-      codeStructure: [
-        {
-          id: '1',
-          label: 'ERC20Token',
-          icon: 'el-icon-folder-opened',
-          children: [
-            { id: '1-1', label: 'transfer()', icon: 'el-icon-document', risk: true },
-            { id: '1-2', label: 'balanceOf()', icon: 'el-icon-document' }
-          ]
-        }
-      ],
-      treeProps: {
-        label: 'label',
-        children: 'children'
-      },
       analysisLogs: [],
       vulLevel: 4,
       activeVul: [0],
@@ -385,7 +290,6 @@ export default {
   },
   methods: {
     simulateLocation () {
-      const startTime = Date.now()
       const logInterval = setInterval(() => {
         this.addLog('process', '正在分析函数: ' + this.getRandomFunction())
       }, 1500)
@@ -393,13 +297,7 @@ export default {
       const timer = setInterval(() => {
         const step = Math.random() * 8 + 4
         this.locateProgress = parseFloat(Math.min(this.locateProgress + step, 100).toFixed(0))
-
-        this.analyzedBlocks = Math.min(Math.floor(this.locateProgress / 3), 32)
-        this.scanSpeed = Math.floor(Math.random() * 8000 + 12000)
-        this.memoryUsage = (Math.random() * 200 + 50).toFixed(1)
-        this.avgTime = Math.floor(Math.random() * 50 + 20)
         this.currentStep = Math.floor(this.locateProgress / 25)
-        this.remainingTime = this.calculateRemainingTime()
 
         if (this.locateProgress >= 100) {
           clearInterval(timer)
@@ -430,12 +328,6 @@ export default {
         'burn()', 'balanceOf()', 'allowance()'
       ]
       return functions[Math.floor(Math.random() * functions.length)]
-    },
-    calculateRemainingTime () {
-      const remaining = (100 - this.locateProgress) * 1000 / this.scanSpeed
-      const minutes = Math.floor(remaining / 60)
-      const seconds = Math.floor(remaining % 60)
-      return `${minutes}分${seconds.toString().padStart(2, '0')}秒`
     },
     confirmFix () {
       this.$confirm('确认应用修复方案并执行验证?', '修复确认', {

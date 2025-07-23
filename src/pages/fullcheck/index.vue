@@ -271,20 +271,6 @@ export default {
       this.uploadedReport = file
       return false
     },
-    async startDetection() {
-      console.log('准备上传的合约文件:', this.uploadedFile);
-      if (!this.uploadedFile) {
-        this.$message.error('请上传合约文件');
-        return;
-      }
-      this.status = 'detecting';
-      this.detecting = true;
-
-      // 1. 上传合约文件和漏洞报告到后端
-      const formData = new FormData();
-      formData.append('contract', this.uploadedFile);
-      if (this.uploadedReport) formData.append('report', this.uploadedReport);
-
     handleReportUpload (file) {
       this.uploadedReport = file
       this.saveUploadedReport(file)

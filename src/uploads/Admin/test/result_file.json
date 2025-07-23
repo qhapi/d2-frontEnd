@@ -1,0 +1,26 @@
+{
+    "test.sol": [
+        {
+            "check": "missing-zero-check",
+            "description": "BoringOwnable.transferOwnership(address,bool,bool).newOwner (test.sol#30) lacks a zero-check on :\n\t\t- pendingOwner = newOwner (test.sol#40)\n",
+            "impact": "Low",
+            "confidence": "Medium",
+            "lines": [
+                30
+            ],
+            "start_col": 32,
+            "end_col": 48
+        },
+        {
+            "check": "missing-zero-check",
+            "description": "BoringOwnable.transferOwnership(address,bool,bool).newOwner (test.sol#30) lacks a zero-check on :\n\t\t- pendingOwner = newOwner (test.sol#40)\n",
+            "impact": "Low",
+            "confidence": "Medium",
+            "lines": [
+                40
+            ],
+            "start_col": 13,
+            "end_col": 36
+        }
+    ]
+}

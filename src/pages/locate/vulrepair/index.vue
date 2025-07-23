@@ -23,53 +23,8 @@
         </div>
 
         <el-row :gutter="20" class="main-content">
-          <!-- 左侧分析过程 -->
-          <el-col :span="8">
-            <el-card class="analysis-panel">
-              <div class="real-time-stats">
-                <h4><i class="el-icon-data-analysis"></i> 实时分析统计</h4>
-                <div class="stats-grid">
-                  <div class="stat-item">
-                    <div class="stat-title">完成进度</div>
-                    <el-progress
-                      type="dashboard"
-                      :percentage="locateProgress"
-                      :color="progressColors">
-                      <span class="progress-text">{{ locateProgress }}%</span>
-                    </el-progress>
-                  </div>
-
-                  <div class="stat-item">
-                    <div class="stat-title">已检测函数</div>
-                    <div class="stat-value">{{ analyzedBlocks }}/{{ totalBlocks }}</div>
-                    <div class="stat-sub">平均耗时 {{ avgTime }}ms/个</div>
-                  </div>
-                </div>
-              </div>
-
-              <el-divider></el-divider>
-
-              <div class="code-structure">
-                <h4><i class="el-icon-files"></i> 代码结构分析</h4>
-                <el-tree
-                  :data="codeStructure"
-                  :props="treeProps"
-                  :highlight-current="true"
-                  node-key="id"
-                  :current-node-key="currentNode"
-                  class="structure-tree">
-                  <span slot-scope="{ node }" class="tree-node">
-                    <i :class="node.icon"></i>
-                    <span>{{ node.label }}</span>
-                    <el-tag v-if="node.risk" size="mini" type="danger">高危</el-tag>
-                  </span>
-                </el-tree>
-              </div>
-            </el-card>
-          </el-col>
-
-          <!-- 右侧主界面 -->
-          <el-col :span="16">
+          <!-- 主界面（移除左侧面板，全宽显示） -->
+          <el-col :span="24">
             <el-card class="main-panel">
               <!-- 分析日志 -->
               <div class="analysis-log">
@@ -176,50 +131,113 @@
 
       <!-- 步骤2：漏洞定位 -->
       <div v-if="activeStep === 1" class="vulnerability-locate">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-card class="vul-info">
-              <div slot="header" class="vul-header">
-                <i class="el-icon-warning"></i>
-                <span>检测到高危漏洞</span>
-              </div>
-              <div class="vul-detail">
-                <el-tag type="danger">Reentrancy Attack</el-tag>
-                <div class="detail-item">
-                  <label>危险等级：</label>
-                  <span class="danger-level critical">严重</span>
+        <!-- 多漏洞显示 -->
+        <div v-if="vulnerabilities && vulnerabilities.length > 0">
+          <div class="vulnerabilities-header">
+            <h3><i class="el-icon-warning"></i> 检测到 {{ vulnerabilities.length }} 个漏洞</h3>
+          </div>
+          
+          <el-row :gutter="20">
+            <el-col :span="24" v-for="(vulnerability, index) in vulnerabilities" :key="index">
+              <el-card class="vul-info" style="margin-bottom: 20px;">
+                <div slot="header" class="vul-header">
+                  <i class="el-icon-warning"></i>
+                  <span>漏洞 {{ index + 1 }}: {{ vulnerability.vulTitle || vulnerability.type }}</span>
                 </div>
-                <div class="detail-item">
-                  <label>触发交易：</label>
-                  <span class="tx-hash">0x3d7...c9a2</span>
+                <div class="vul-detail">
+                  <el-row :gutter="20">
+                    <el-col :span="12">
+                      <el-tag :type="getVulTagType(vulnerability.vulLevel || getVulLevel(vulnerability.type))">
+                        {{ vulnerability.type }}
+                      </el-tag>
+                      <div class="detail-item">
+                        <label>危险等级：</label>
+                        <span :class="getDangerLevelClass(vulnerability.vulLevel || getVulLevel(vulnerability.type))">
+                          {{ getDangerLevelText(vulnerability.vulLevel || getVulLevel(vulnerability.type)) }}
+                        </span>
+                        <el-rate
+                          :value="vulnerability.vulLevel || getVulLevel(vulnerability.type)"
+                          disabled
+                          :max="5"
+                          :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
+                          style="margin-left: 10px;"/>
+                      </div>
+                      <div class="detail-item">
+                        <label>漏洞位置：</label>
+                        <span class="vul-location">{{ vulnerability.vullocate || `Line ${vulnerability.line}` }}</span>
+                      </div>
+                      <div class="detail-item" v-if="vulnerability.function">
+                        <label>所在函数：</label>
+                        <span class="function-name">{{ vulnerability.function }}</span>
+                      </div>
+                      <div class="detail-item" v-if="vulnerability.vulCVE">
+                        <label>CVE 编号：</label>
+                        <span class="cve-number">{{ vulnerability.vulCVE }}</span>
+                      </div>
+                    </el-col>
+                    <el-col :span="12">
+                      <div class="vul-description">
+                        <label>漏洞描述：</label>
+                        <p>{{ vulnerability.description || getVulDescription(vulnerability.type) }}</p>
+                      </div>
+                    </el-col>
+                  </el-row>
                 </div>
-                <div class="code-snippet">
-                  <pre><code class="hljs solidity">function withdraw() public {
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+        
+        <!-- 无漏洞或单个漏洞的兜底显示 -->
+        <div v-else>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-card class="vul-info">
+                <div slot="header" class="vul-header">
+                  <i class="el-icon-warning"></i>
+                  <span>检测到高危漏洞</span>
+                </div>
+                <div class="vul-detail">
+                  <el-tag type="danger">Reentrancy Attack</el-tag>
+                  <div class="detail-item">
+                    <label>危险等级：</label>
+                    <span class="danger-level critical">严重</span>
+                  </div>
+                  <div class="detail-item">
+                    <label>触发交易：</label>
+                    <span class="tx-hash">0x3d7...c9a2</span>
+                  </div>
+                  <div class="code-snippet">
+                    <pre><code class="hljs solidity">function withdraw() public {
     // 🚨 危险：先转账后修改状态
     (bool success, ) = msg.sender.call{value: balance}("");
     require(success);
     balances[msg.sender] = 0;
 }</code></pre>
+                  </div>
                 </div>
-              </div>
-            </el-card>
-          </el-col>
-          <el-col :span="12">
-            <el-card class="transaction-list">
-              <div slot="header">历史触发交易</div>
-              <el-timeline>
-                <el-timeline-item
-                  v-for="(tx, index) in transactions"
-                  :key="index"
-                  :timestamp="tx.timestamp">
-                  {{ tx.description }}
-                </el-timeline-item>
-              </el-timeline>
-            </el-card>
-          </el-col>
-        </el-row>
-        <el-button type="primary" @click="activeStep++">进入修复</el-button>
-        <el-button type="success" style="margin-left: 16px;" :loading="bytecodeRepairing" @click="handleBytecodeRepair">字节码修复</el-button>
+              </el-card>
+            </el-col>
+            <el-col :span="12">
+              <el-card class="transaction-list">
+                <div slot="header">历史触发交易</div>
+                <el-timeline>
+                  <el-timeline-item
+                    v-for="(tx, index) in transactions"
+                    :key="index"
+                    :timestamp="tx.timestamp">
+                    {{ tx.description }}
+                  </el-timeline-item>
+                </el-timeline>
+              </el-card>
+            </el-col>
+          </el-row>
+        </div>
+        
+        <div class="action-buttons" style="margin-top: 20px;">
+          <el-button type="primary" @click="activeStep++">进入修复</el-button>
+          <el-button type="success" style="margin-left: 16px;" :loading="bytecodeRepairing" @click="handleBytecodeRepair">字节码修复</el-button>
+        </div>
       </div>
 
       <!-- 步骤3：修复方案 -->
@@ -357,6 +375,7 @@ export default {
         children: 'children'
       },
       analysisLogs: [],
+      vulnerabilities: [], // 添加漏洞数组
       vulnerableCode: `pragma solidity ^0.8.0;
 
 contract Vulnerable {
@@ -454,7 +473,7 @@ contract Fixed {
       }
       this.hasAnalyzed = true
       try {
-        const response = await axios.post('http://localhost:5011/analyze', formData, {
+        const response = await axios.post('http://localhost:5010/analyze', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
         this.taskId = response.data.task_id
@@ -475,7 +494,7 @@ contract Fixed {
     startPolling () {
       this.pollInterval = setInterval(async () => {
         try {
-          const response = await axios.get(`http://localhost:5011/results/${this.taskId}`)
+          const response = await axios.get(`http://localhost:5010/results/${this.taskId}`)
           if (response.data.log) {
             this.parseBackendLog(response.data.log)
           }
@@ -648,6 +667,34 @@ contract Fixed {
       } finally {
         this.bytecodeRepairing = false
       }
+    },
+    // 新增辅助方法用于多漏洞显示
+    getVulTagType (level) {
+      if (level >= 4) return 'danger'
+      if (level >= 3) return 'warning'
+      return 'info'
+    },
+    getDangerLevelClass (level) {
+      if (level >= 4) return 'danger-level critical'
+      if (level >= 3) return 'danger-level high'
+      if (level >= 2) return 'danger-level medium'
+      return 'danger-level low'
+    },
+    getDangerLevelText (level) {
+      if (level >= 4) return '严重'
+      if (level >= 3) return '高危'
+      if (level >= 2) return '中危'
+      return '低危'
+    },
+    getVulDescription (type) {
+      const descriptions = {
+        'Reentrancy': '重入攻击漏洞，攻击者可以在函数执行过程中重复调用该函数，可能导致资金被多次提取。',
+        'Integer Overflow': '整数溢出漏洞，当数值超出变量类型的最大值时会发生溢出，可能导致意外的计算结果。',
+        'Unchecked Low Level Call': '未检查的低级调用，call()函数的返回值未被检查，可能导致静默失败。',
+        'Timestamp Dependence': '时间戳依赖漏洞，合约逻辑依赖于区块时间戳，矿工可以在一定范围内操纵时间戳。',
+        'Tx.Origin Authentication': 'tx.origin认证漏洞，使用tx.origin进行身份验证容易受到钓鱼攻击。'
+      }
+      return descriptions[type] || '未知漏洞类型，建议进一步分析代码逻辑。'
     }
   },
   beforeDestroy () {
@@ -681,6 +728,19 @@ contract Fixed {
   }
 
   .vulnerability-locate {
+    .vulnerabilities-header {
+      margin-bottom: 20px;
+      
+      h3 {
+        color: #F56C6C;
+        font-weight: bold;
+        
+        i {
+          margin-right: 8px;
+        }
+      }
+    }
+
     .vul-header {
       color: #F56C6C;
       font-weight: bold;
@@ -696,23 +756,67 @@ contract Fixed {
 
         label {
           color: #909399;
+          font-weight: bold;
+          margin-right: 8px;
         }
 
         .danger-level {
+          font-weight: bold;
+          
           &.critical {
             color: #F56C6C;
-            font-weight: bold;
           }
+          
+          &.high {
+            color: #E6A23C;
+          }
+          
+          &.medium {
+            color: #F7BA2A;
+          }
+          
+          &.low {
+            color: #67C23A;
+          }
+        }
+        
+        .vul-location, .function-name, .cve-number {
+          font-family: 'Courier New', monospace;
+          background: #f5f5f5;
+          padding: 2px 6px;
+          border-radius: 3px;
+        }
+      }
+      
+      .vul-description {
+        margin-top: 15px;
+        
+        label {
+          color: #909399;
+          font-weight: bold;
+          display: block;
+          margin-bottom: 8px;
+        }
+        
+        p {
+          color: #606266;
+          line-height: 1.6;
+          margin: 0;
         }
       }
 
       pre {
-        background: #ffffff !important;  // 改为白色背景
-        border: 1px solid #e0e0e0;        // 添加浅灰色边框
-        color: #333;           // 改为深色文字
+        background: #ffffff !important;
+        border: 1px solid #e0e0e0;
+        color: #333;
         padding: 15px !important;
         border-radius: 4px;
       }
+    }
+    
+    .action-buttons {
+      text-align: center;
+      margin-top: 30px;
     }
   }
 
